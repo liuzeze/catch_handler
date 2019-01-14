@@ -29,7 +29,7 @@
  
  ```
  
- ![image](https://github.com/liuzeze/catch_handler/blob/master/img/Screenshot_2019-01-14-11-22-58.png=200x300)  
+ ![image](https://github.com/liuzeze/catch_handler/blob/master/img/Screenshot_2019-01-14-11-22-58.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/300)  
   ![image](https://github.com/liuzeze/catch_handler/blob/master/img/Screenshot_2019-01-14-11-23-15.png)
    ![image](https://github.com/liuzeze/catch_handler/blob/master/img/Screenshot_2019-01-14-11-23-28.png)
     ![image](https://github.com/liuzeze/catch_handler/blob/master/img/Screenshot_2019-01-14-11-24-11.png)
