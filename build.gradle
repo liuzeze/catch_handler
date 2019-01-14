@@ -19,9 +19,7 @@ allprojects {
     repositories {
         google()
         jcenter()
-        maven {
-            url = 'https://dl.bintray.com/liuzejcenter/maven'
-        }
+
         tasks.withType(Javadoc) {
             options {
                 encoding "UTF-8"
