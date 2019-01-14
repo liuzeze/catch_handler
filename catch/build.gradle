@@ -1,11 +1,12 @@
 apply plugin: 'com.android.library'
+/*
 
 apply plugin: 'com.novoda.bintray-release'
 
 publish {
     repoName = 'maven'
 //远程仓库名字,不指明，默认是上传到maven
-    userOrg = 'lz'
+    userOrg = 'liuzejcenter'
 // bintray.com用户名
     groupId = 'com.lz'
 // jcenter上的路径,bintray上创建Package时填写的Version control项
@@ -21,6 +22,7 @@ publish {
 tasks.withType(Javadoc) {
     options { encoding "UTF-8" charSet 'UTF-8' links "http://docs.oracle.com/javase/7/docs/api" }
 }
+*/
 
 
 android {
