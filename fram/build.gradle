@@ -1,4 +1,4 @@
-apply plugin: 'com.android.library'
+apply plugin: 'com.android.library'/*
 apply plugin: 'com.novoda.bintray-release'
 
 publish {
@@ -15,7 +15,7 @@ publish {
 // 描述，不重要
     website = 'https://github.com/liuzeze'
 // 网站，最好有，不重要
-}
+}*/
 //gradlew clean build bintrayUpload -PbintrayUser=liuzejcenter -PbintrayKey=928ac5327c2eac19dd63d7b8cc94ef4019016765 -PdryRun=false
 
 android {

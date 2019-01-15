@@ -1,5 +1,4 @@
 apply plugin: 'com.android.library'
-/*
 
 apply plugin: 'com.novoda.bintray-release'
 
@@ -12,7 +11,7 @@ publish {
 // jcenter上的路径,bintray上创建Package时填写的Version control项
     artifactId = 'catch_handler'
 // 项目名称，bintray上创建Package时填写的Name项
-    publishVersion = '1.0.0'
+    publishVersion = '1.0.1'
     desc = '异常捕获,上传钉钉机器人'
 // 描述，不重要
     website = 'https://github.com/liuzeze'
@@ -22,7 +21,6 @@ publish {
 tasks.withType(Javadoc) {
     options { encoding "UTF-8" charSet 'UTF-8' links "http://docs.oracle.com/javase/7/docs/api" }
 }
-*/
 
 
 android {

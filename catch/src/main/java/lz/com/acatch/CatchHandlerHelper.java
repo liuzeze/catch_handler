@@ -1,32 +1,32 @@
 package lz.com.acatch;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.support.annotation.NonNull;
 import android.text.TextUtils;
+import android.widget.Toast;
 
+import java.io.BufferedWriter;
+import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 
-/**
- * <pre>
- *     author : NeXT
- *     time   : 2018/09/25
- *     desc   :
- * </pre>
- */
-public class UCEHandlerHelper {
+public class CatchHandlerHelper {
 
     private static final int MAX_STACK_TRACE_SIZE = 131071; //128 KB - 1
     private static final String LINE_SEPARATOR = "\n";
     private static String sUrl;
     private static boolean sIsAutoSend;
+    private static String sPostBody;
 
     public static ExceptionInfoBean getExceptionInfoBean(Throwable throwable) {
         StringWriter sw = new StringWriter();
@@ -71,6 +71,7 @@ public class UCEHandlerHelper {
 
         return ExceptionInfoBean.newInstance()
                 .setUrl(sUrl)
+                .setPostBodyStyle(sPostBody)
                 .isAutoSend(sIsAutoSend)
                 .cause(cause)
                 .className(throwClassName)
@@ -79,6 +80,10 @@ public class UCEHandlerHelper {
                 .lineNumber(throwLineNumber)
                 .stackTraceString(stackTraceString)
                 .activityLogString(activityLogStringBuilder.toString());
+    }
+
+    public static void setPostBodyStyle(String postBody) {
+        sPostBody = postBody;
     }
 
     public static StringBuilder getExceptionInfoString(Context context, ExceptionInfoBean exceptionInfoBean) {
@@ -96,7 +101,7 @@ public class UCEHandlerHelper {
             getExceptionHeaderInfo(exceptionInfoBean, errorReport);
         }
         errorReport.append(LINE_SEPARATOR);
-        errorReport.append("\n------------ ERROR LOG ------------\n");
+        errorReport.append("\n------------ 异常信息 ------------\n");
         errorReport.append(LINE_SEPARATOR);
         if (exceptionInfoBean != null) {
             errorReport.append(exceptionInfoBean.getStackTraceString());
@@ -106,7 +111,7 @@ public class UCEHandlerHelper {
             errorReport.append(exceptionInfoBean.getActivityLogString());
             errorReport.append(LINE_SEPARATOR);
         }
-        errorReport.append("\n------------ DEVICE INFO ------------\n");
+        errorReport.append("\n------------ 设备信息 ------------\n");
         errorReport.append(LINE_SEPARATOR);
         errorReport.append("Brand: ");
         errorReport.append(Build.BRAND);
@@ -129,7 +134,7 @@ public class UCEHandlerHelper {
         errorReport.append("Release: ");
         errorReport.append(Build.VERSION.RELEASE);
         errorReport.append(LINE_SEPARATOR);
-        errorReport.append("\n------------ APP INFO ------------\n");
+        errorReport.append("\n------------ APP 信息 ------------\n");
         errorReport.append(LINE_SEPARATOR);
         String versionName = getVersionName(context);
         errorReport.append("Version: ");
@@ -152,12 +157,12 @@ public class UCEHandlerHelper {
         errorReport.append("Current Date: ");
         errorReport.append(dateFormat.format(currentDate));
         errorReport.append(LINE_SEPARATOR);
-        errorReport.append("\n------------ END OF LOG ------------\n");
+        errorReport.append("\n");
         return errorReport;
     }
 
     private static void getExceptionHeaderInfo(ExceptionInfoBean exceptionInfoBean, @NonNull StringBuilder errorReport) {
-        errorReport.append("------------ UCE HANDLER Library ------------");
+        errorReport.append("------------ CATCH HANDLER Library ------------");
         errorReport.append("\n------------ by NeXT ------------\n");
         errorReport.append(LINE_SEPARATOR);
         if (exceptionInfoBean != null) {
@@ -220,4 +225,48 @@ public class UCEHandlerHelper {
         sUrl = url;
         sIsAutoSend = isAutoSend;
     }
+
+    public static void upLoadErrorInfor(final Context context, final String errorInfo, final String sendUrl, final String postBody) {
+        if (!TextUtils.isEmpty(errorInfo)) {
+            Thread thread = new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        String body = postBody.replace(BaseSendError.BODYSTR, errorInfo);
+
+                        URL url = new URL(sendUrl);
+                        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+                        connection.setRequestMethod("POST");//设置请求方式为POST
+                        connection.setDoOutput(true);
+                        //允许写出
+                        connection.setDoInput(true);
+                        // 允许读入
+                        connection.setUseCaches(false);
+                        // 不使用缓存
+                        connection.setRequestProperty("Content-Type", "application/json;charset=utf-8");
+                        connection.connect();
+                        // 连接
+
+                        //设置参数类型是json格式
+                        connection.connect();
+                        BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(connection.getOutputStream(), "UTF-8"));
+                        writer.write(body);
+                        writer.close();
+
+                        int responseCode = connection.getResponseCode();
+                        if (responseCode == HttpURLConnection.HTTP_OK) {
+                            Toast.makeText(context, "上传成功", Toast.LENGTH_SHORT).show();
+                            ((Activity) context).finish();
+                        }
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+            });
+            thread.start();
+
+        }
+    }
+
+
 }

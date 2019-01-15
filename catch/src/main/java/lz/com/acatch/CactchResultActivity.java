@@ -1,20 +1,4 @@
-/*
- *
- *  * Copyright © 2018 Rohit Sahebrao Surwase.
- *  *
- *  *    Licensed under the Apache License, Version 2.0 (the "License");
- *  *    you may not use this file except in compliance with the License.
- *  *    You may obtain a copy of the License at
- *  *
- *  *        http://www.apache.org/licenses/LICENSE-2.0
- *  *
- *  *    Unless required by applicable law or agreed to in writing, software
- *  *    distributed under the License is distributed on an "AS IS" BASIS,
- *  *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  *    See the License for the specific language governing permissions and
- *  * limitations under the License.
- *
- */
+
 package lz.com.acatch;
 
 import android.annotation.SuppressLint;
@@ -37,19 +21,15 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.net.HttpURLConnection;
-import java.net.URL;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 
-public final class UCEDefaultActivity extends AppCompatActivity {
+public final class CactchResultActivity extends AppCompatActivity {
     private String pureStrCurrentErrorLog;
 
     @SuppressLint({"PrivateResource", "SetTextI18n"})
@@ -66,20 +46,20 @@ public final class UCEDefaultActivity extends AppCompatActivity {
         TextView tvCause = findViewById(R.id.tv_cause);
         TextView tvStackTrace = findViewById(R.id.tv_stack_trace);
         Button button = findViewById(R.id.bt_sendservice);
-        final ExceptionInfoBean exceptionInfoBean = getIntent().getParcelableExtra(UCEHandler.EXTRA_EXCEPTION_INFO);
+        final ExceptionInfoBean exceptionInfoBean = getIntent().getParcelableExtra(CatchHandler.EXTRA_EXCEPTION_INFO);
         if (exceptionInfoBean == null) {
             return;
         }
         final String errorInfo = getExceptionInfoString(this, exceptionInfoBean);
-        tvType.setText(Html.fromHtml("ExceptionType: <br/>" + getHtmlCodeBlueStr(exceptionInfoBean.getExceptionType())));
+        tvType.setText(Html.fromHtml("异常类型: <br/>" + getHtmlCodeBlueStr(exceptionInfoBean.getExceptionType())));
         String methodName = getHtmlCodeBlueStr(exceptionInfoBean.getClassName()) + "." + getHtmlCodeStr(exceptionInfoBean.getMethodName());
-        tvMethodName.setText(Html.fromHtml("MethodName: <br/>" + methodName));
-        tvLineNumber.setText(Html.fromHtml(getHtmlCodeBlueStr("LineNumber: " + exceptionInfoBean.getLineNumber())));
-        tvCause.setText(exceptionInfoBean.getCause());
+        tvMethodName.setText(Html.fromHtml("方法名: <br/>" + methodName));
+        tvLineNumber.setText(Html.fromHtml("行号 : " + getHtmlCodeBlueStr(exceptionInfoBean.getLineNumber())));
+        tvCause.setText(Html.fromHtml("Cause : " + getHtmlCodeBlueStr(exceptionInfoBean.getCause())));
         tvStackTrace.setText(errorInfo);
 
         if (exceptionInfoBean.AutoSend()) {
-            sendServiceLog(errorInfo, exceptionInfoBean.getUrl());
+            sendServiceLog(errorInfo, exceptionInfoBean.getUrl(), exceptionInfoBean.getPostBody());
         } else {
 
             if (TextUtils.isEmpty(exceptionInfoBean.getUrl())) {
@@ -89,7 +69,7 @@ public final class UCEDefaultActivity extends AppCompatActivity {
                 button.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
-                        sendServiceLog(errorInfo, exceptionInfoBean.getUrl());
+                        sendServiceLog(errorInfo, exceptionInfoBean.getUrl(), exceptionInfoBean.getPostBody());
                     }
                 });
             }
@@ -99,8 +79,8 @@ public final class UCEDefaultActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
 
-                Intent intent = UCEDefaultActivity.this.getPackageManager()
-                        .getLaunchIntentForPackage(UCEDefaultActivity.this.getApplication().getPackageName());
+                Intent intent = CactchResultActivity.this.getPackageManager()
+                        .getLaunchIntentForPackage(CactchResultActivity.this.getApplication().getPackageName());
                 startActivity(intent);
 
                 android.os.Process.killProcess(android.os.Process.myPid());
@@ -109,71 +89,10 @@ public final class UCEDefaultActivity extends AppCompatActivity {
         });
     }
 
-    private void sendServiceLog(final String errorInfo, final String info) {
-        if (!TextUtils.isEmpty(errorInfo)) {
-            Thread thread = new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    try {
+    private void sendServiceLog(final String errorInfo, final String sendUrl, String body) {
 
-                        String body = "{\n" +
-                                "    \"msgtype\": \"text\", \n" +
-                                "    \"text\": {\n" +
-                                "        \"content\": \"" + errorInfo + "\"\n" +
-                                "    }, \n" +
-                                "    \"at\": {\n" +
-                                "        \"atMobiles\": [\n" +
-                                "            \"15130515779\"\n" +
-                                "        ], \n" +
-                                "        \"isAtAll\": false\n" +
-                                "    }\n" +
-                                "}";
+        CatchHandlerHelper.upLoadErrorInfor(this, errorInfo, sendUrl, body);
 
-
-                        URL url = new URL(info);
-                        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-                        connection.setRequestMethod("POST");//设置请求方式为POST
-                        connection.setDoOutput(true);
-                        //允许写出
-                        connection.setDoInput(true);
-                        // 允许读入
-                        connection.setUseCaches(false);
-                        // 不使用缓存
-                        connection.setRequestProperty("Content-Type", "application/json;charset=utf-8");
-                        connection.connect();
-                        // 连接
-
-                        //设置参数类型是json格式
-                        connection.connect();
-                        BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(connection.getOutputStream(), "UTF-8"));
-                        writer.write(body);
-                        writer.close();
-
-                        int responseCode = connection.getResponseCode();
-                        if (responseCode == HttpURLConnection.HTTP_OK) {
-                            /*InputStream inputStream = connection.getInputStream();
-
-                            BufferedReader tBufferedReader = new BufferedReader(new InputStreamReader(inputStream));
-
-                            StringBuffer tStringBuffer = new StringBuffer();
-
-                            String sTempOneLine = new String("");
-
-                            while ((sTempOneLine = tBufferedReader.readLine()) != null) {
-
-                                tStringBuffer.append(sTempOneLine);
-
-                            }*/
-                            Toast.makeText(UCEDefaultActivity.this, "上传成功", Toast.LENGTH_SHORT).show();
-                        }
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                }
-            });
-            thread.start();
-
-        }
     }
 
     private void saveErrorLogToFile(boolean isShowToast) {
@@ -183,8 +102,8 @@ public final class UCEDefaultActivity extends AppCompatActivity {
             DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault());
             String strCurrentDate = dateFormat.format(currentDate);
             strCurrentDate = strCurrentDate.replace(" ", "_");
-            String errorLogFileName = getApplicationName(UCEDefaultActivity.this) + "_Error-Log_" + strCurrentDate;
-            String errorLog = getPureErrorDetailsFromIntent(UCEDefaultActivity.this, getIntent());
+            String errorLogFileName = getApplicationName(CactchResultActivity.this) + "_Error-Log_" + strCurrentDate;
+            String errorLog = getPureErrorDetailsFromIntent(CactchResultActivity.this, getIntent());
             String fullPath = Environment.getExternalStorageDirectory() + "/AppErrorLogs_UCEH/";
             FileOutputStream outputStream;
             try {
@@ -210,7 +129,7 @@ public final class UCEDefaultActivity extends AppCompatActivity {
 
     private void shareErrorLog() {
         if (TextUtils.isEmpty(pureStrCurrentErrorLog)) {
-            pureStrCurrentErrorLog = getPureErrorDetailsFromIntent(UCEDefaultActivity.this, getIntent());
+            pureStrCurrentErrorLog = getPureErrorDetailsFromIntent(CactchResultActivity.this, getIntent());
         }
         Intent share = new Intent(Intent.ACTION_SEND);
         share.setType("text/plain");
@@ -221,19 +140,19 @@ public final class UCEDefaultActivity extends AppCompatActivity {
     }
 
     private void copyErrorToClipboard() {
-        String errorInformation = getPureErrorDetailsFromIntent(UCEDefaultActivity.this, getIntent());
+        String errorInformation = getPureErrorDetailsFromIntent(CactchResultActivity.this, getIntent());
         ClipboardManager clipboard = (ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
         if (clipboard != null) {
             ClipData clip = ClipData.newPlainText("View Error Log", errorInformation);
             clipboard.setPrimaryClip(clip);
-            Toast.makeText(UCEDefaultActivity.this, "Error Log Copied", Toast.LENGTH_SHORT).show();
+            Toast.makeText(CactchResultActivity.this, "Error Log Copied", Toast.LENGTH_SHORT).show();
         }
     }
 
     private String getPureErrorDetailsFromIntent(Context context, Intent intent) {
-        ExceptionInfoBean exceptionInfoBean = intent.getParcelableExtra(UCEHandler.EXTRA_EXCEPTION_INFO);
+        ExceptionInfoBean exceptionInfoBean = intent.getParcelableExtra(CatchHandler.EXTRA_EXCEPTION_INFO);
         if (TextUtils.isEmpty(pureStrCurrentErrorLog)) {
-            StringBuilder errorReport = UCEHandlerHelper.getFullExceptionInfoString(context, exceptionInfoBean);
+            StringBuilder errorReport = CatchHandlerHelper.getFullExceptionInfoString(context, exceptionInfoBean);
             pureStrCurrentErrorLog = errorReport.toString();
             return pureStrCurrentErrorLog;
         } else {
@@ -243,7 +162,7 @@ public final class UCEDefaultActivity extends AppCompatActivity {
 
     private String getExceptionInfoString(Context context, ExceptionInfoBean
             exceptionInfoBean) {
-        return UCEHandlerHelper.getExceptionInfoString(context, exceptionInfoBean).toString();
+        return CatchHandlerHelper.getExceptionInfoString(context, exceptionInfoBean).toString();
     }
 
     public boolean isExternalStorageWritable() {

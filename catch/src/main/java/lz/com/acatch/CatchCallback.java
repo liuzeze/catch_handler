@@ -2,14 +2,8 @@ package lz.com.acatch;
 
 import android.support.annotation.Nullable;
 
-/**
- * <pre>
- *     author : NeXT
- *     time   : 2018/09/25
- *     desc   :
- * </pre>
- */
-public interface UCECallback {
+
+public interface CatchCallback {
 
     void exceptionInfo(@Nullable ExceptionInfoBean exceptionInfoBean);
 

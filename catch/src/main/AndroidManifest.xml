@@ -3,7 +3,7 @@
 
     <application>
         <activity
-            android:name="UCEDefaultActivity"
+            android:name=".CactchResultActivity"
             android:launchMode="singleTask"
             android:process=":error_activity"
             android:theme="@style/Theme.AppCompat.Light.NoActionBar" />

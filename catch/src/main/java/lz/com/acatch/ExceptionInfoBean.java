@@ -3,13 +3,7 @@ package lz.com.acatch;
 import android.os.Parcel;
 import android.os.Parcelable;
 
-/**
- * <pre>
- *     author : NeXT
- *     time   : 2018/09/25
- *     desc   :
- * </pre>
- */
+
 public class ExceptionInfoBean implements Parcelable {
 
     private int lineNumber;
@@ -21,6 +15,11 @@ public class ExceptionInfoBean implements Parcelable {
     private String activityLogString;
     private String url;
     private boolean isAutoSend;
+    private String mPostBody;
+
+    public String getPostBody() {
+        return mPostBody;
+    }
 
     public static ExceptionInfoBean newInstance() {
         return new ExceptionInfoBean();
@@ -168,6 +167,7 @@ public class ExceptionInfoBean implements Parcelable {
         dest.writeString(this.activityLogString);
         dest.writeString(this.url);
         dest.writeString(String.valueOf(this.isAutoSend));
+        dest.writeString(mPostBody);
     }
 
     protected ExceptionInfoBean(Parcel in) {
@@ -180,6 +180,7 @@ public class ExceptionInfoBean implements Parcelable {
         this.activityLogString = in.readString();
         this.url = in.readString();
         this.isAutoSend = Boolean.parseBoolean(in.readString());
+        this.mPostBody = in.readString();
     }
 
     public static final Creator<ExceptionInfoBean> CREATOR = new Creator<ExceptionInfoBean>() {
@@ -195,4 +196,8 @@ public class ExceptionInfoBean implements Parcelable {
     };
 
 
+    public ExceptionInfoBean setPostBodyStyle(String postBody) {
+        mPostBody = postBody;
+        return this;
+    }
 }
