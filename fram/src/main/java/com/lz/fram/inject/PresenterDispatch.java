@@ -5,7 +5,6 @@ import android.arch.lifecycle.Lifecycle;
 import android.arch.lifecycle.LifecycleOwner;
 
 import com.lz.fram.base.BasePresenter;
-import com.lz.fram.base.BaseView;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -44,13 +43,14 @@ public class PresenterDispatch {
         }
     }
 
+    @Deprecated
     public <P extends BasePresenter> void detachView() {
         PresenterStore store = mProviders.getPresenterStore();
         HashMap<String, P> mMap = store.getMap();
         for (Map.Entry<String, P> entry : mMap.entrySet()) {
             P presenter = entry.getValue();
             if (presenter != null) {
-                presenter.detachView();
+                presenter.onDestroy(null);
             }
         }
     }

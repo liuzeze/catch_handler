@@ -2,16 +2,16 @@ package com.lz.fram.observer;
 
 
 import com.lz.fram.base.BaseView;
-import com.lz.fram.exception.ApiException;
+import com.lz.fram.net.http.ApiException;
 
-import io.reactivex.subscribers.ResourceSubscriber;
+import io.reactivex.observers.ResourceObserver;
 
 /**
  * -------- 日期 ---------- 维护人 ------------ 变更内容 --------
  * 2017/12/26	9:24	     刘泽			  公用的订阅处理
  */
-public abstract class CommonSubscriber<T> extends ResourceSubscriber<T> {
-    private BaseView mView;
+public abstract class CommonSubscriber<T> extends ResourceObserver<T> {
+    protected BaseView mView;
 
     protected CommonSubscriber() {
     }
@@ -20,15 +20,9 @@ public abstract class CommonSubscriber<T> extends ResourceSubscriber<T> {
         this.mView = view;
     }
 
-
     @Override
     protected void onStart() {
         super.onStart();
-
-    }
-
-    @Override
-    public void onComplete() {
     }
 
     @Override
@@ -42,7 +36,15 @@ public abstract class CommonSubscriber<T> extends ResourceSubscriber<T> {
         mView.showErrorMsg(message);
     }
 
+    @Override
+    public void onComplete() {
+
+    }
+
+
     protected void onError(String mes) {
 
     }
+
+
 }

@@ -1,4 +1,4 @@
-apply plugin: 'com.android.library'/*
+apply plugin: 'com.android.library'
 apply plugin: 'com.novoda.bintray-release'
 
 publish {
@@ -10,12 +10,16 @@ publish {
 // jcenter上的路径,bintray上创建Package时填写的Version control项
     artifactId = 'fram'
 // 项目名称，bintray上创建Package时填写的Name项
-    publishVersion = '1.0.0'
+    publishVersion = '1.0.2'
     desc = '封装MVP框架'
 // 描述，不重要
     website = 'https://github.com/liuzeze'
 // 网站，最好有，不重要
-}*/
+}
+tasks.withType(Javadoc) {
+    options { encoding "UTF-8" charSet 'UTF-8' links "http://docs.oracle.com/javase/7/docs/api" }
+}
+
 //gradlew clean build bintrayUpload -PbintrayUser=liuzejcenter -PbintrayKey=928ac5327c2eac19dd63d7b8cc94ef4019016765 -PdryRun=false
 
 android {
@@ -42,12 +46,9 @@ android {
 
 dependencies {
 
-    annotationProcessor "com.google.dagger:dagger-compiler:2.16"
-    //dagger库以及编译库
-    api 'com.google.dagger:dagger:2.16'
     //异步处
     api 'com.squareup.retrofit2:retrofit:2.5.0'
-    api 'io.reactivex.rxjava2:rxjava:2.2.0'
+    api 'io.reactivex.rxjava2:rxjava:2.2.4'
     api 'io.reactivex.rxjava2:rxandroid:2.1.0'
     // 网络库
     api 'com.squareup.retrofit2:adapter-rxjava2:2.4.0'
@@ -63,6 +64,7 @@ dependencies {
 
 //////// 打包发布配置开始 ////////
 //////// 打包发布配置开始 ////////
+/*
 apply plugin: 'maven'
 ext {
     // 从Github上clone下来的项目的本地地址
@@ -92,4 +94,4 @@ task androidSourcesJar(type: Jar) {
 }
 artifacts {
     archives androidSourcesJar
-}
+}*/

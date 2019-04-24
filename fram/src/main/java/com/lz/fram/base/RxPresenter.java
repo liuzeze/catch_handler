@@ -2,16 +2,16 @@ package com.lz.fram.base;
 
 
 import android.arch.lifecycle.LifecycleOwner;
+import android.content.Context;
 import android.widget.Toast;
 
 import com.lz.fram.app.FrameApplication;
+import com.lz.fram.observer.ObserverManager;
 import com.lz.fram.scope.CallBackAnnotion;
 import com.lz.fram.utils.RxLifecycleUtils;
 import com.uber.autodispose.AutoDisposeConverter;
 
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.HashMap;
 
 import io.reactivex.disposables.Disposable;
 
@@ -23,25 +23,24 @@ import io.reactivex.disposables.Disposable;
 
 public class RxPresenter<T extends BaseView> implements BasePresenter {
     protected T mBaseView;
+    protected Context mContext;
     private LifecycleOwner mLifecycleOwner;
 
-    private HashMap<Object, Disposable> mapDisposable;
 
+    protected ObserverManager mObserverManager;
 
     /**
      * 添加带有标记的订阅，方便手动注销，以免重复的订阅响应
      *
-     * @param tag          订阅标记
-     * @param subscription 订阅者
+     * @param tag        订阅标记
+     * @param disposable 订阅者
      */
-    protected void addSubscribe(String tag, Disposable subscription) {
-        if (mapDisposable == null) {
-            mapDisposable = new HashMap<>();
+    public void addSubscribe(String tag, Disposable disposable) {
+
+        if (mObserverManager == null) {
+            mObserverManager = new ObserverManager();
         }
-        //添加前先移除
-        removeSubscribe(tag);
-        //加入到管理
-        mapDisposable.put(tag, subscription);
+        mObserverManager.add(tag, disposable);
     }
 
 
@@ -50,20 +49,11 @@ public class RxPresenter<T extends BaseView> implements BasePresenter {
      *
      * @param tag 订阅者标记
      */
-    private void removeSubscribe(String tag) {
-        if (mapDisposable != null) {
-            //取出队列中订阅者进行主动消费掉
-            Disposable disposable = mapDisposable.get(tag);
-
-            if (disposable != null) {
-                //主动的进行消费
-                disposable.dispose();
-                //从管理集合中移除
-                mapDisposable.remove(tag);
-            }
+    public void removeSubscribe(String tag) {
+        if (mObserverManager != null) {
+            mObserverManager.cancel(tag);
         }
     }
-
 
     protected <T> AutoDisposeConverter<T> bindLifecycle() {
         if (null == mLifecycleOwner) {
@@ -77,20 +67,32 @@ public class RxPresenter<T extends BaseView> implements BasePresenter {
     public void setLifecycleOwner(LifecycleOwner lifecycleOwner) {
         mLifecycleOwner = lifecycleOwner;
         this.mBaseView = (T) lifecycleOwner;
-    }
-
-    @Override
-    public void detachView() {
-        this.mBaseView = null;
+        mContext = mBaseView.getContext();
     }
 
 
     @Override
     public void onDestroy(LifecycleOwner owner) {
-        detachView();
+        this.mBaseView = null;
+        mContext = null;
+        if (mObserverManager != null) {
+            mObserverManager.cancelAll();
+        }
     }
 
+
+    /**
+     * 注解回调方式
+     *
+     * @param tag
+     * @param obj
+     */
+    @Deprecated
     protected void callBack(String tag, Object... obj) {
+        if (mBaseView == null) {
+            Toast.makeText(FrameApplication.mApplication, "mBaseView is null", Toast.LENGTH_SHORT).show();
+            return;
+        }
         Method[] declaredMethods = mBaseView.getClass().getDeclaredMethods();
         for (Method declaredMethod : declaredMethods) {
             declaredMethod.setAccessible(true);
@@ -101,16 +103,14 @@ public class RxPresenter<T extends BaseView> implements BasePresenter {
                         declaredMethod.invoke(mBaseView, obj);
                     } catch (Exception e) {
                         e.printStackTrace();
-                        if (mBaseView != null) {
-                            mBaseView.showErrorMsg(e.getMessage());
-                        } else {
-                            Toast.makeText(FrameApplication.mApplication, "mBaseView is null", Toast.LENGTH_SHORT).show();
-                        }
+                        mBaseView.showErrorMsg(e.getMessage());
+
                     }
                     break;
                 }
             }
 
         }
+
     }
 }

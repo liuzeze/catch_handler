@@ -9,6 +9,7 @@ import lz.com.acatch.BaseSendError;
 import lz.com.acatch.CatchCallback;
 import lz.com.acatch.CatchHandler;
 import lz.com.acatch.ExceptionInfoBean;
+import lz.com.status.StatusView;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -22,7 +23,7 @@ public class MainActivity extends AppCompatActivity {
                 .setAutoSend(false)
                 .setUrl("钉钉机器人上传地址")
                 .build();
-
+        StatusView.init(this).showContentView();
     }
 
     public void crash(View view) {
