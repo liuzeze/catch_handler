@@ -10,7 +10,7 @@ publish {
 // jcenter上的路径,bintray上创建Package时填写的Version control项
     artifactId = 'fram'
 // 项目名称，bintray上创建Package时填写的Name项
-    publishVersion = '1.0.2'
+    publishVersion = '1.0.3'
     desc = '封装MVP框架'
 // 描述，不重要
     website = 'https://github.com/liuzeze'

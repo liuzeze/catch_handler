@@ -1,9 +1,7 @@
 package com.lz.fram.net;
 
-import android.content.Context;
-
-import com.lz.fram.net.download.DownLoadFactory;
 import com.lz.fram.net.download.DownParamBean;
+import com.lz.fram.net.http.ConfigModule;
 import com.lz.fram.net.http.HttpConfigFactory;
 import com.lz.fram.net.http.RetrofitFactory;
 import com.lz.fram.net.upload.UploadRetrofit;
@@ -20,28 +18,9 @@ import okhttp3.ResponseBody;
  */
 public class RxRequestUtils {
 
-    private static RxRequestUtils sRxRquestUtils;
-
-
-    public static RxRequestUtils getInstance() {
-        if (sRxRquestUtils == null) {
-            synchronized (RxRequestUtils.class) {
-                if (sRxRquestUtils == null) {
-                    sRxRquestUtils = new RxRequestUtils();
-                }
-            }
-        }
-        return sRxRquestUtils;
+    public static void initConfig(ConfigModule options) {
+        HttpConfigFactory.getInstance().initConfig(options);
     }
-
-
-    public void init(Context context) {
-        HttpConfigFactory.getInstance().initConfig(context);
-        RetrofitFactory.getInstance();
-        DownLoadFactory.getInstance();
-        UploadRetrofit.getInstance();
-    }
-
 
     public static <T> T create(Class<T> apiClass) {
         return RetrofitFactory
@@ -66,7 +45,7 @@ public class RxRequestUtils {
     }
 
     public static Observable<ResponseBody> uploadFile(String url, String file, String fileName) {
-        return UploadRetrofit.uploadImage(url,
+        return UploadRetrofit.getInstance().uploadImage(url,
                 file + File.separator + fileName);
 
 

@@ -3,9 +3,7 @@ package com.lz.fram.base;
 
 import android.arch.lifecycle.LifecycleOwner;
 import android.content.Context;
-import android.widget.Toast;
 
-import com.lz.fram.app.FrameApplication;
 import com.lz.fram.observer.ObserverManager;
 import com.lz.fram.scope.CallBackAnnotion;
 import com.lz.fram.utils.RxLifecycleUtils;
@@ -90,8 +88,7 @@ public class RxPresenter<T extends BaseView> implements BasePresenter {
     @Deprecated
     protected void callBack(String tag, Object... obj) {
         if (mBaseView == null) {
-            Toast.makeText(FrameApplication.mApplication, "mBaseView is null", Toast.LENGTH_SHORT).show();
-            return;
+            throw new NullPointerException("mBaseView is null");
         }
         Method[] declaredMethods = mBaseView.getClass().getDeclaredMethods();
         for (Method declaredMethod : declaredMethods) {
