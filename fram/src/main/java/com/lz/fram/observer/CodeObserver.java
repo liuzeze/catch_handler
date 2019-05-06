@@ -15,9 +15,9 @@ public abstract class CodeObserver<T> extends CommonObserver<BaseEntity<T>> {
                 break;
             case 300:
             case 500:
+            default:
                 onCodeError(tBaseEntity.getCode(), tBaseEntity.getMsg());
                 break;
-            default:
         }
     }
 

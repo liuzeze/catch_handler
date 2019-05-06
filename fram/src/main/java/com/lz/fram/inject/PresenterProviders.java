@@ -2,7 +2,7 @@ package com.lz.fram.inject;
 
 
 import com.lz.fram.base.BasePresenter;
-import com.lz.fram.scope.AttachView;
+import com.lz.fram.scope.AttachPresenter;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
@@ -30,7 +30,7 @@ public class PresenterProviders {
             }
             for (Annotation ann : anns) {
 
-                if (ann instanceof AttachView) {
+                if (ann instanceof AttachPresenter) {
                     Class<?> type = field.getType();
                     Object o = null;
                     try {
