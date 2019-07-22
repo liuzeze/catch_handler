@@ -1,0 +1,61 @@
+apply plugin: 'com.android.library'
+
+apply plugin: 'com.novoda.bintray-release'
+
+publish {
+    repoName = 'maven'
+//远程仓库名字,不指明，默认是上传到maven
+    userOrg = 'liuzejcenter'
+// bintray.com用户名
+    groupId = 'com.lz'
+// jcenter上的路径,bintray上创建Package时填写的Version control项
+    artifactId = 'httplib'
+// 项目名称，bintray上创建Package时填写的Name项
+    publishVersion = '1.0.0'
+    desc = '网络请求库'
+// 描述，不重要
+    website = 'https://github.com/liuzeze'
+// 网站，最好有，不重要
+}
+tasks.withType(Javadoc) {
+    options { encoding "UTF-8" charSet 'UTF-8' links "http://docs.oracle.com/javase/7/docs/api" }
+}
+
+android {
+    compileSdkVersion 28
+
+
+    defaultConfig {
+        minSdkVersion 16
+        targetSdkVersion 28
+        versionCode 1
+        versionName "1.0"
+
+        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+    lintOptions {
+        abortOnError false
+    }
+
+}
+
+dependencies {
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
+
+    //异步处
+    api 'com.squareup.retrofit2:retrofit:2.6.0'
+    api 'io.reactivex.rxjava2:rxjava:2.2.7'
+    api 'io.reactivex.rxjava2:rxandroid:2.1.1'
+    api 'com.squareup.retrofit2:adapter-rxjava2:2.4.0'
+    api 'com.squareup.retrofit2:converter-scalars:2.5.0'
+    api 'com.squareup.retrofit2:converter-gson:2.4.0'
+    api 'com.alibaba:fastjson:1.2.48'
+}

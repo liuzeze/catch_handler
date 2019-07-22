@@ -1,15 +1,14 @@
 package lz.com.catch_handler;
 
-import android.support.annotation.Nullable;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.view.View;
+import android.support.v7.app.AppCompatActivity;
 
-import lz.com.acatch.BaseSendError;
-import lz.com.acatch.CatchCallback;
-import lz.com.acatch.CatchHandler;
-import lz.com.acatch.ExceptionInfoBean;
-import lz.com.status.StatusView;
+import com.lz.httplib.RxRequestUtils;
+import com.lz.httplib.http.ConfigModule;
+import com.lz.httplib.http.GlobalConfigBuild;
+import com.lz.httplib.transformer.Transformer;
+
+import io.reactivex.functions.Consumer;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -18,15 +17,32 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        new CatchHandler.Builder(getApplicationContext())
+/*        new CatchHandler.Builder(getApplicationContext())
                 .setCatchHEnabled(true)
                 .setAutoSend(false)
                 .setUrl("钉钉机器人上传地址")
                 .build();
-        StatusView.init(this).showContentView();
+        StatusView.init(this).showContentView();*/
+        RxRequestUtils.initConfig(new ConfigModule() {
+            @Override
+            public void applyOptions(GlobalConfigBuild.Builder builder) {
+
+                builder.baseurl("http://lf.snssdk.com/api/");
+
+            }
+        });
+        RxRequestUtils
+                .create(ApiService.class)
+                .getNewsArticle2("推荐", "")
+                .compose(Transformer.<String>switchSchedulersObser()).subscribe(new Consumer<String>() {
+            @Override
+            public void accept(String s) throws Exception {
+                System.out.println("============"+s);
+            }
+        });
     }
 
-    public void crash(View view) {
-        int i = 1 / 0;
-    }
+//    public void crash(View view) {
+//        int i = 1 / 0;
+//    }
 }

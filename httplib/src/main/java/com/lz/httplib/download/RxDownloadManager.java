@@ -1,10 +1,10 @@
-package com.lz.fram.net;
+package com.lz.httplib.download;
 
 import android.os.Environment;
 import android.text.TextUtils;
 
-import com.lz.fram.net.download.DownParamBean;
-import com.lz.fram.net.download.DownloadTask;
+
+import com.lz.httplib.download.DownParamBean;
 
 import java.io.File;
 import java.util.HashMap;

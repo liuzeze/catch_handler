@@ -2,7 +2,6 @@ package com.lz.fram.observer;
 
 
 import com.lz.fram.base.BaseView;
-import com.lz.fram.net.http.ApiException;
 
 import io.reactivex.observers.ResourceObserver;
 
