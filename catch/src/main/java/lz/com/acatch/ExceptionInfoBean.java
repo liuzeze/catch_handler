@@ -13,13 +13,8 @@ public class ExceptionInfoBean implements Parcelable {
     private String exceptionType;
     private String stackTraceString;
     private String activityLogString;
-    private String url;
-    private boolean isAutoSend;
-    private String mPostBody;
+    private String mErrorLogPath;
 
-    public String getPostBody() {
-        return mPostBody;
-    }
 
     public static ExceptionInfoBean newInstance() {
         return new ExceptionInfoBean();
@@ -77,17 +72,12 @@ public class ExceptionInfoBean implements Parcelable {
         return cause;
     }
 
-    public String getUrl() {
-        return url;
-    }
+
 
     public void setCause(String cause) {
         this.cause = cause;
     }
 
-    public boolean AutoSend() {
-        return isAutoSend;
-    }
 
     @Override
     public String toString() {
@@ -99,7 +89,6 @@ public class ExceptionInfoBean implements Parcelable {
                 ", exceptionType='" + exceptionType + '\'' +
                 ", stackTraceString='" + stackTraceString + '\'' +
                 ", activityLogString='" + activityLogString + '\'' +
-                ", url='" + url + '\'' +
                 '}';
     }
 
@@ -141,15 +130,6 @@ public class ExceptionInfoBean implements Parcelable {
         return this;
     }
 
-    public ExceptionInfoBean setUrl(String url) {
-        this.url = url;
-        return this;
-    }
-
-    public ExceptionInfoBean isAutoSend(boolean isAutoSend) {
-        this.isAutoSend = isAutoSend;
-        return this;
-    }
 
     @Override
     public int describeContents() {
@@ -165,9 +145,8 @@ public class ExceptionInfoBean implements Parcelable {
         dest.writeString(this.exceptionType);
         dest.writeString(this.stackTraceString);
         dest.writeString(this.activityLogString);
-        dest.writeString(this.url);
-        dest.writeString(String.valueOf(this.isAutoSend));
-        dest.writeString(mPostBody);
+
+        dest.writeString(mErrorLogPath);
     }
 
     protected ExceptionInfoBean(Parcel in) {
@@ -178,9 +157,7 @@ public class ExceptionInfoBean implements Parcelable {
         this.exceptionType = in.readString();
         this.stackTraceString = in.readString();
         this.activityLogString = in.readString();
-        this.url = in.readString();
-        this.isAutoSend = Boolean.parseBoolean(in.readString());
-        this.mPostBody = in.readString();
+        this.mErrorLogPath = in.readString();
     }
 
     public static final Creator<ExceptionInfoBean> CREATOR = new Creator<ExceptionInfoBean>() {
@@ -196,8 +173,13 @@ public class ExceptionInfoBean implements Parcelable {
     };
 
 
-    public ExceptionInfoBean setPostBodyStyle(String postBody) {
-        mPostBody = postBody;
+
+    public ExceptionInfoBean setErrorLogPath(String errorLogPath) {
+        mErrorLogPath = errorLogPath;
         return this;
+    }
+
+    public String getErrorLogPath() {
+        return mErrorLogPath;
     }
 }

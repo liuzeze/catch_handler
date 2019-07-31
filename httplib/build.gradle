@@ -1,5 +1,5 @@
 apply plugin: 'com.android.library'
-
+/*
 apply plugin: 'com.novoda.bintray-release'
 
 publish {
@@ -19,7 +19,7 @@ publish {
 }
 tasks.withType(Javadoc) {
     options { encoding "UTF-8" charSet 'UTF-8' links "http://docs.oracle.com/javase/7/docs/api" }
-}
+}*/
 
 android {
     compileSdkVersion 28

@@ -5,8 +5,7 @@ import android.support.annotation.Nullable;
 
 public interface CatchCallback {
 
-    void exceptionInfo(@Nullable ExceptionInfoBean exceptionInfoBean);
+    void exceptionInfo(@Nullable ExceptionInfoBean exceptionInfoBean,@Nullable Throwable throwable);
 
-    void throwable(@Nullable Throwable throwable);
 
 }

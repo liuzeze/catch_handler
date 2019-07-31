@@ -39,18 +39,7 @@
                 android:textSize="16sp"
                 android:typeface="serif" />
 
-            <Button
-                android:id="@+id/bt_sendservice"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_margin="@dimen/default_margin"
-                android:background="#ff0000"
-                android:text="上传"
-                android:textColor="@color/ffffff"
-                android:textSize="16sp"
-                android:typeface="serif"
-                android:visibility="gone"
-                tools:visibility="visible" />
+
 
 
             <View

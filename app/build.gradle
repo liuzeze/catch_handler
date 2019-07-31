@@ -30,9 +30,10 @@ dependencies {
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
     //    implementation 'com.lz:catch_handler:1.0.0'
     implementation 'com.lz:NetLog:1.0.0'
-//    implementation 'com.lz:fram:1.0.3'
+//    implementation 'com.lz:fram:1.0.5'
 //    implementation project(':catch')
-    implementation project(':httplib')
+    implementation project(':fram')
+//    implementation project(':httplib')
 //    implementation project(':status')
 //    implementation 'com.lz:lzstatus:1.0.0'
 }

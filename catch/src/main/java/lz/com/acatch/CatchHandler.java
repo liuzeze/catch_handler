@@ -7,6 +7,7 @@ import android.app.Application;
 import android.content.Context;
 import android.content.Intent;
 import android.util.Log;
+import android.widget.Toast;
 
 import java.util.Date;
 
@@ -17,6 +18,7 @@ public final class CatchHandler {
     private static final String DEFAULT_HANDLER_PACKAGE_NAME = "com.android.internal.os";
     private static final String SHARED_PREFERENCES_FILE = "catch_preferences";
     private static final String SHARED_PREFERENCES_FIELD_TIMESTAMP = "last_crash_timestamp";
+    private final String mErrorPath;
     private Application application;
     private boolean isCatchHEnabled;
     private CatchCallback mCatchCallback = null;
@@ -24,8 +26,7 @@ public final class CatchHandler {
     private CatchHandler(Builder builder) {
         mCatchCallback = builder.mCatchCallback;
         isCatchHEnabled = builder.isCatchHEnabled;
-        CatchHandlerHelper.setPostBodyStyle(builder.mBaseSendError.sendErrorStr());
-        CatchHandlerHelper.setServiceUrl(builder.url, builder.isAutoSend);
+        mErrorPath = builder.mErrorPath;
         setUCEHandler(builder.context);
     }
 
@@ -48,10 +49,16 @@ public final class CatchHandler {
         }
     }
 
+    /**
+     * 拦截系统异常
+     *
+     * @param oldHandler
+     */
     private void setDefaultUncaughtExceptionHandler(final Thread.UncaughtExceptionHandler oldHandler) {
         Thread.setDefaultUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
             @Override
             public void uncaughtException(Thread thread, Throwable throwable) {
+                Toast.makeText(application,"程序异常,退出应用",Toast.LENGTH_SHORT).show();
                 if (isCatchHEnabled) {
                     if (hasCrashedInTheLastSeconds(application)) {
                         if (oldHandler != null) {
@@ -60,10 +67,9 @@ public final class CatchHandler {
                         }
                     } else {
                         setLastCrashTimestamp(application, new Date().getTime());
-                        ExceptionInfoBean exceptionInfoBean = CatchHandlerHelper.getExceptionInfoBean(throwable);
+                        ExceptionInfoBean exceptionInfoBean = CatchHandlerHelper.getExceptionInfoBean(throwable,mErrorPath);
                         if (mCatchCallback != null) {
-                            mCatchCallback.exceptionInfo(exceptionInfoBean);
-                            mCatchCallback.throwable(throwable);
+                            mCatchCallback.exceptionInfo(exceptionInfoBean, throwable);
                             return;
                         }
                         final Intent intent = new Intent(application, CactchResultActivity.class);
@@ -73,11 +79,11 @@ public final class CatchHandler {
 
                     }
 
-                    killCurrentProcess();
 
                 } else if (oldHandler != null) {
                     oldHandler.uncaughtException(thread, throwable);
                 }
+                killCurrentProcess();
             }
         });
     }
@@ -109,12 +115,14 @@ public final class CatchHandler {
     }
 
     public static class Builder {
+        //上下文
         private Context context;
+        //是否开启本地捕获
         private boolean isCatchHEnabled = true;
-        private String url = "";
-        private boolean isAutoSend = false;
+        //异常捕获回调
         private CatchCallback mCatchCallback = null;
-        private BaseSendError mBaseSendError=new SendDingDing();
+        //错误日志保存路径
+        private String mErrorPath;
 
         public Builder(Context context) {
             this.context = context;
@@ -125,28 +133,17 @@ public final class CatchHandler {
             return this;
         }
 
-        public Builder setUrl(String url) {
-            this.url = url;
-            return this;
-        }
-
-        public Builder setAutoSend(boolean autoSend) {
-            isAutoSend = autoSend;
-            return this;
-        }
-
         public Builder setCatchCallback(CatchCallback catchCallback) {
             mCatchCallback = catchCallback;
             return this;
         }
-
-        public Builder setBaseSendError(BaseSendError baseSendError) {
-            mBaseSendError = baseSendError;
-            return this;
+        public CatchHandler build() {
+            return new CatchHandler(this);
         }
 
-        public CatchHandler build() {
-            return isCatchHEnabled ? new CatchHandler(this) : null;
+        public Builder setErrorLogPath(String errorPath) {
+            mErrorPath = errorPath;
+            return this;
         }
     }
 }

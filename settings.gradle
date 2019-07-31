@@ -1,1 +1,1 @@
-include ':app', /*':catch', ':loglib',  ':status',*/ ':httplib',':fram'
+include ':app', /*':catch', ':loglib',  ':status', ':httplib',*/':fram'

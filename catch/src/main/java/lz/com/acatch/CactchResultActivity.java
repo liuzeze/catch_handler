@@ -2,6 +2,9 @@
 package lz.com.acatch;
 
 import android.annotation.SuppressLint;
+import android.app.AlarmManager;
+import android.app.Application;
+import android.app.PendingIntent;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
@@ -9,6 +12,7 @@ import android.content.Intent;
 import android.content.pm.ApplicationInfo;
 import android.os.Bundle;
 import android.os.Environment;
+import android.support.v4.text.TextUtilsCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.text.Html;
@@ -29,8 +33,11 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 
+import static android.content.Intent.FLAG_ACTIVITY_NEW_TASK;
+
 public final class CactchResultActivity extends AppCompatActivity {
     private String pureStrCurrentErrorLog;
+    private ExceptionInfoBean mExceptionInfoBean;
 
     @SuppressLint({"PrivateResource", "SetTextI18n"})
     @Override
@@ -45,43 +52,32 @@ public final class CactchResultActivity extends AppCompatActivity {
         TextView tvLineNumber = findViewById(R.id.tv_line_number);
         TextView tvCause = findViewById(R.id.tv_cause);
         TextView tvStackTrace = findViewById(R.id.tv_stack_trace);
-        Button button = findViewById(R.id.bt_sendservice);
-        final ExceptionInfoBean exceptionInfoBean = getIntent().getParcelableExtra(CatchHandler.EXTRA_EXCEPTION_INFO);
-        if (exceptionInfoBean == null) {
+        mExceptionInfoBean = getIntent().getParcelableExtra(CatchHandler.EXTRA_EXCEPTION_INFO);
+        if (mExceptionInfoBean == null) {
             return;
         }
-        final String errorInfo = getExceptionInfoString(this, exceptionInfoBean);
-        tvType.setText(Html.fromHtml("异常类型: <br/>" + getHtmlCodeBlueStr(exceptionInfoBean.getExceptionType())));
-        String methodName = getHtmlCodeBlueStr(exceptionInfoBean.getClassName()) + "." + getHtmlCodeStr(exceptionInfoBean.getMethodName());
+        final String errorInfo = getExceptionInfoString(this, mExceptionInfoBean);
+        tvType.setText(Html.fromHtml("异常类型: <br/>" + getHtmlCodeBlueStr(mExceptionInfoBean.getExceptionType())));
+        String methodName = getHtmlCodeBlueStr(mExceptionInfoBean.getClassName()) + "." + getHtmlCodeStr(mExceptionInfoBean.getMethodName());
         tvMethodName.setText(Html.fromHtml("方法名: <br/>" + methodName));
-        tvLineNumber.setText(Html.fromHtml("行号 : " + getHtmlCodeBlueStr(exceptionInfoBean.getLineNumber())));
-        tvCause.setText(Html.fromHtml("Cause : " + getHtmlCodeBlueStr(exceptionInfoBean.getCause())));
+        tvLineNumber.setText(Html.fromHtml("行号 : " + getHtmlCodeBlueStr(mExceptionInfoBean.getLineNumber())));
+        tvCause.setText(Html.fromHtml("Cause : " + getHtmlCodeBlueStr(mExceptionInfoBean.getCause())));
         tvStackTrace.setText(errorInfo);
 
-        if (exceptionInfoBean.AutoSend()) {
-            sendServiceLog(errorInfo, exceptionInfoBean.getUrl(), exceptionInfoBean.getPostBody());
-        } else {
+        //保存本地
+        saveErrorLogToFile(false);
 
-            if (TextUtils.isEmpty(exceptionInfoBean.getUrl())) {
-                button.setVisibility(View.GONE);
-            } else {
-                button.setVisibility(View.VISIBLE);
-                button.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View view) {
-                        sendServiceLog(errorInfo, exceptionInfoBean.getUrl(), exceptionInfoBean.getPostBody());
-                    }
-                });
-            }
-        }
         Button reboot = findViewById(R.id.bt_reboot);
         reboot.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
 
+                Application application = CactchResultActivity.this.getApplication();
                 Intent intent = CactchResultActivity.this.getPackageManager()
-                        .getLaunchIntentForPackage(CactchResultActivity.this.getApplication().getPackageName());
-                startActivity(intent);
+                        .getLaunchIntentForPackage(application.getPackageName());
+                PendingIntent activity = PendingIntent.getActivity(application, 0, intent, FLAG_ACTIVITY_NEW_TASK);
+                android.app.AlarmManager systemService = (android.app.AlarmManager) application.getSystemService(Context.ALARM_SERVICE);
+                systemService.set(AlarmManager.RTC, System.currentTimeMillis() + 200, activity);
 
                 android.os.Process.killProcess(android.os.Process.myPid());
                 System.exit(10);
@@ -89,11 +85,6 @@ public final class CactchResultActivity extends AppCompatActivity {
         });
     }
 
-    private void sendServiceLog(final String errorInfo, final String sendUrl, String body) {
-
-        CatchHandlerHelper.upLoadErrorInfor(this, errorInfo, sendUrl, body);
-
-    }
 
     private void saveErrorLogToFile(boolean isShowToast) {
         Boolean isSDPresent = Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED);
@@ -104,7 +95,10 @@ public final class CactchResultActivity extends AppCompatActivity {
             strCurrentDate = strCurrentDate.replace(" ", "_");
             String errorLogFileName = getApplicationName(CactchResultActivity.this) + "_Error-Log_" + strCurrentDate;
             String errorLog = getPureErrorDetailsFromIntent(CactchResultActivity.this, getIntent());
-            String fullPath = Environment.getExternalStorageDirectory() + "/AppErrorLogs_UCEH/";
+            String fullPath = Environment.getExternalStorageDirectory() + "/AppErrorLogs/";
+            if (!TextUtils.isEmpty(mExceptionInfoBean.getErrorLogPath())) {
+                fullPath = mExceptionInfoBean.getErrorLogPath() + "/";
+            }
             FileOutputStream outputStream;
             try {
                 File file = new File(fullPath);
@@ -199,9 +193,9 @@ public final class CactchResultActivity extends AppCompatActivity {
         int i = item.getItemId();
         if (i == R.id.action_copy) {
             copyErrorToClipboard();
-        } else if (i == R.id.action_save) {
+        }/* else if (i == R.id.action_save) {
             saveErrorLogToFile(true);
-        } else if (i == R.id.action_share) {
+        } */ else if (i == R.id.action_share) {
             shareErrorLog();
         }
         return super.onOptionsItemSelected(item);

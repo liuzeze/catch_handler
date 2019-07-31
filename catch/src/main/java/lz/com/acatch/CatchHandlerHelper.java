@@ -24,11 +24,8 @@ public class CatchHandlerHelper {
 
     private static final int MAX_STACK_TRACE_SIZE = 131071; //128 KB - 1
     private static final String LINE_SEPARATOR = "\n";
-    private static String sUrl;
-    private static boolean sIsAutoSend;
-    private static String sPostBody;
 
-    public static ExceptionInfoBean getExceptionInfoBean(Throwable throwable) {
+    public static ExceptionInfoBean getExceptionInfoBean(Throwable throwable, String errorPath) {
         StringWriter sw = new StringWriter();
         PrintWriter pw = new PrintWriter(sw);
         throwable.printStackTrace(pw);
@@ -70,9 +67,7 @@ public class CatchHandlerHelper {
         StringBuilder activityLogStringBuilder = new StringBuilder();
 
         return ExceptionInfoBean.newInstance()
-                .setUrl(sUrl)
-                .setPostBodyStyle(sPostBody)
-                .isAutoSend(sIsAutoSend)
+                .setErrorLogPath(errorPath)
                 .cause(cause)
                 .className(throwClassName)
                 .methodName(throwMethodName)
@@ -82,9 +77,6 @@ public class CatchHandlerHelper {
                 .activityLogString(activityLogStringBuilder.toString());
     }
 
-    public static void setPostBodyStyle(String postBody) {
-        sPostBody = postBody;
-    }
 
     public static StringBuilder getExceptionInfoString(Context context, ExceptionInfoBean exceptionInfoBean) {
         return getExceptionInfoString(context, exceptionInfoBean, false);
@@ -221,18 +213,14 @@ public class CatchHandlerHelper {
         }
     }
 
-    public static void setServiceUrl(String url, boolean isAutoSend) {
-        sUrl = url;
-        sIsAutoSend = isAutoSend;
-    }
 
-    public static void upLoadErrorInfor(final Context context, final String errorInfo, final String sendUrl, final String postBody) {
-        if (!TextUtils.isEmpty(errorInfo)) {
+    public static void upLoadErrorInfor(final Context context, final String sendUrl, final String postBody) {
+        if (!TextUtils.isEmpty(postBody)) {
             Thread thread = new Thread(new Runnable() {
                 @Override
                 public void run() {
                     try {
-                        String body = postBody.replace(BaseSendError.BODYSTR, errorInfo);
+                        String body = postBody.replace(BaseSendError.BODYSTR, postBody);
 
                         URL url = new URL(sendUrl);
                         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
@@ -267,6 +255,5 @@ public class CatchHandlerHelper {
 
         }
     }
-
 
 }
