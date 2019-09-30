@@ -10,7 +10,6 @@
         android:layout_height="50dp"
         android:elevation="2dp"
         android:background="#ffffff"
-        android:minHeight="?attr/actionBarSize"
         app:backIcon="@mipmap/title_back"
         app:backTextAppearance="?attr/actionMenuTextAppearance"
         app:backTextColor="#ffffff"

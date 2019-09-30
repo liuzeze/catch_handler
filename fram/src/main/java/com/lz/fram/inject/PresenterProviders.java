@@ -1,11 +1,14 @@
 package com.lz.fram.inject;
 
 
-import com.lz.fram.base.BasePresenter;
+import android.arch.lifecycle.Lifecycle;
+
+import com.lz.fram.base.BasePresenterImpl;
 import com.lz.fram.scope.AttachPresenter;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
+import java.util.HashMap;
 
 /**
  * -------- 日期 ---------- 维护人 ------------ 变更内容 --------
@@ -13,14 +16,12 @@ import java.lang.reflect.Field;
  */
 public class PresenterProviders {
 
-    private PresenterStore mPresenterStore = new PresenterStore<>();
 
-    public static PresenterProviders inject(Object obj) {
-        return new PresenterProviders(obj);
-    }
+    private final String DEFAULT_KEY = "PresenterStore.DefaultKey";
+    private HashMap<String, ? super BasePresenterImpl> mMap = new HashMap<>();
 
-    private PresenterProviders(Object obj) {
-        checkNull(obj);
+
+    public PresenterProviders(Object obj, Lifecycle lifecycle) {
         for (Field field : obj.getClass().getDeclaredFields()) {
             field.setAccessible(true);
             //获取字段上的注解
@@ -29,7 +30,6 @@ public class PresenterProviders {
                 continue;
             }
             for (Annotation ann : anns) {
-
                 if (ann instanceof AttachPresenter) {
                     Class<?> type = field.getType();
                     Object o = null;
@@ -40,8 +40,15 @@ public class PresenterProviders {
                         }
                         String canonicalName = type.getName();
 
-                        mPresenterStore.put(canonicalName, (BasePresenter) field.get(obj));
-
+                        BasePresenterImpl presenter = (BasePresenterImpl) field.get(obj);
+                        Object oldPresenter = mMap.put(DEFAULT_KEY + ":" + canonicalName, presenter);
+                        if (oldPresenter != null) {
+                            oldPresenter = null;
+                        }
+                        if (presenter != null) {
+                            presenter.attachView(obj);
+                            lifecycle.addObserver(presenter);
+                        }
                     } catch (IllegalAccessException e) {
                         e.printStackTrace();
                     } catch (InstantiationException e) {
@@ -55,22 +62,10 @@ public class PresenterProviders {
         }
     }
 
-
-    private static boolean checkNull(Object obj) {
-        if (obj == null) {
-            return false;
-        } else {
-            return true;
-        }
+    public final void clear() {
+        mMap.clear();
+        mMap = null;
     }
 
 
-    public PresenterStore getPresenterStore() {
-        return mPresenterStore;
-    }
-
-    public PresenterDispatch presenterCreate() {
-        PresenterDispatch presenterDispatch = new PresenterDispatch(this);
-        return presenterDispatch;
-    }
 }

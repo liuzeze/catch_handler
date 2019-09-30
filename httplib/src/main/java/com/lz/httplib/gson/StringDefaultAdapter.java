@@ -12,28 +12,30 @@ import com.google.gson.JsonSyntaxException;
 import java.lang.reflect.Type;
 
 /**
- * -----------作者----------日期----------变更内容-----
- * -          刘泽      2018-11-01       创建class
+ * Created by Allen on 2017/11/20.
+ * <p>
+ * 定义为long类型,如果后台返回""或者null,则返回0
  */
-public class ListDefaultAdapter implements JsonSerializer<Long>, JsonDeserializer<Long> {
+
+public class StringDefaultAdapter implements JsonSerializer<String>, JsonDeserializer<String> {
     @Override
-    public Long deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context)
+    public String deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context)
             throws JsonParseException {
         try {
             if (json.getAsString().equals("") || json.getAsString().equals("null")) {
-                return 0l;
+                return "";
             }
         } catch (Exception ignore) {
         }
         try {
-            return json.getAsLong();
-        } catch (NumberFormatException e) {
+            return json.getAsString();
+        } catch (Exception e) {
             throw new JsonSyntaxException(e);
         }
     }
 
     @Override
-    public JsonElement serialize(Long src, Type typeOfSrc, JsonSerializationContext context) {
+    public JsonElement serialize(String src, Type typeOfSrc, JsonSerializationContext context) {
         return new JsonPrimitive(src);
     }
 }

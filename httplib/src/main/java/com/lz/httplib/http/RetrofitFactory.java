@@ -1,7 +1,6 @@
 package com.lz.httplib.http;
 
 
-
 import com.lz.httplib.gson.GsonAdapter;
 
 import okhttp3.OkHttpClient;
@@ -16,7 +15,7 @@ import retrofit2.converter.scalars.ScalarsConverterFactory;
  */
 public class RetrofitFactory {
     private static RetrofitFactory instance;
-    private final Retrofit.Builder mClient;
+    private final Retrofit mRetrofit;
 
     public static RetrofitFactory getInstance() {
         if (instance == null) {
@@ -36,7 +35,7 @@ public class RetrofitFactory {
             throw new NullPointerException("请先配置地址参数！");
         }
         OkHttpClient build = OkhttpFactory.getInstance().getOkhttpBuilder().build();
-        mClient = new Retrofit.Builder()
+        Retrofit.Builder client = new Retrofit.Builder()
                 .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
                 .addConverterFactory(ScalarsConverterFactory.create())
                 .addConverterFactory(GsonConverterFactory.create(GsonAdapter.buildGson()))
@@ -45,15 +44,14 @@ public class RetrofitFactory {
 
         if (configBuild != null) {
             if (configBuild.getRetrofitConfiguration() != null) {
-                configBuild.getRetrofitConfiguration().configRetrofit(mClient);
+                configBuild.getRetrofitConfiguration().configRetrofit(client);
             }
         }
-
-
+        mRetrofit = client.build();
     }
 
-    public Retrofit.Builder getRetrofitClient() {
-        return mClient;
+    public Retrofit getRetrofit() {
+        return mRetrofit;
     }
 
     public interface RetrofitConfiguration {

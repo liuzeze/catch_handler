@@ -2,6 +2,9 @@ package com.lz.httplib.http;
 
 import android.text.TextUtils;
 
+import com.lz.httplib.bean.ParseInfo;
+import com.lz.httplib.callback.APICallBack;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -13,7 +16,9 @@ import okhttp3.Interceptor;
  * 2017/12/26	9:24	     刘泽			  请求框架参数初始化
  */
 public class GlobalConfigBuild {
-    private HttpUrl mApiUrl ;
+    private final APICallBack mApiCallBack;
+    private ParseInfo mParseInfo;
+    private HttpUrl mApiUrl;
     private List<Interceptor> mInterceptors;
     private List<Interceptor> netInterceptors;
     private RetrofitFactory.RetrofitConfiguration mRetrofitConfiguration;
@@ -25,6 +30,8 @@ public class GlobalConfigBuild {
         this.netInterceptors = builder.netInterceptors;
         this.mRetrofitConfiguration = builder.retrofitConfiguration;
         this.mOkhttpConfiguration = builder.okhttpConfiguration;
+        mParseInfo = builder.mParseInfo;
+        mApiCallBack = builder.mApiCallBack;
     }
 
     public static Builder builder() {
@@ -59,12 +66,23 @@ public class GlobalConfigBuild {
         return mApiUrl;
     }
 
+    public ParseInfo getPaeseInfor() {
+        return mParseInfo == null ? mParseInfo = ParseInfo.DEFAULT : mParseInfo;
+    }
+
+    public APICallBack getApiCallBack() {
+
+        return mApiCallBack;
+    }
+
     public static final class Builder {
-        private HttpUrl apiUrl= HttpUrl.parse("https://api.github.com/");
+        private HttpUrl apiUrl = HttpUrl.parse("https://api.github.com/");
         private List<Interceptor> interceptors;
         private List<Interceptor> netInterceptors;
         private RetrofitFactory.RetrofitConfiguration retrofitConfiguration;
         private OkhttpFactory.OkhttpConfiguration okhttpConfiguration;
+        private ParseInfo mParseInfo;
+        private APICallBack mApiCallBack;
 
         private Builder() {
         }
@@ -85,6 +103,16 @@ public class GlobalConfigBuild {
                 interceptors = new ArrayList<>();
             }
             this.interceptors.add(interceptor);
+            return this;
+        }
+
+        public Builder setPaeseInfor(ParseInfo parseInfo) {
+            mParseInfo = parseInfo;
+            return this;
+        }
+
+        public Builder setAPICallBack(APICallBack apiCallBack) {
+            mApiCallBack = apiCallBack;
             return this;
         }
 

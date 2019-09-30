@@ -3,25 +3,25 @@ package com.lz.fram.base;
 
 import android.app.Activity;
 import android.content.Context;
+import android.graphics.Color;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
-import android.support.v4.app.FragmentActivity;
-
+import android.support.v7.app.AppCompatActivity;
 
 import com.lz.fram.R;
-import com.lz.fram.inject.PresenterDispatch;
+import com.lz.fram.inject.InjectManager;
 import com.lz.fram.inject.PresenterProviders;
+import com.lz.fram.utils.ActivityUtils;
 import com.lz.fram.view.SwipePanel;
 import com.lz.fram.view.TitleToolbar;
 
-import io.reactivex.annotations.Nullable;
-
-
-public abstract class FramBaseActivity extends FragmentActivity implements BaseView {
+public abstract class FramBaseActivity extends AppCompatActivity implements BaseView {
 
     protected Activity mActivity;
-    private TitleToolbar titleToolbar;
-    private SwipePanel swipePanel;
+    private TitleToolbar mTitleToolbar;
+    protected SwipePanel mSwipePanel;
+    private PresenterProviders mPresenterProviders;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -37,25 +37,25 @@ public abstract class FramBaseActivity extends FragmentActivity implements BaseV
      */
     protected void initConfig() {
         mActivity = this;
-        InjectManager.getLayoutId(this);
-        PresenterDispatch presenterDispatch = PresenterProviders.inject(this).presenterCreate();
-        presenterDispatch.attachView(this, getLifecycle());
+        //站栈管理
+        ActivityUtils.addActivity(this);
+        //布局文件设置
+        InjectManager.inject(this);
+        //presenter
+        mPresenterProviders = InjectManager.attachPresenter(this, getLifecycle());
+        //返回控件
+        mSwipePanel = SwipePanel.init(mActivity);
+
     }
 
 
     protected TitleToolbar getTitleToolbar() {
-        if (titleToolbar == null) {
-            titleToolbar = findViewById(R.id.common_toolbar);
+        if (mTitleToolbar == null) {
+            mTitleToolbar = findViewById(R.id.common_toolbar);
         }
-        return titleToolbar;
+        return mTitleToolbar;
     }
 
-    protected SwipePanel getSwipePanel() {
-        if (swipePanel == null) {
-            swipePanel = findViewById(R.id.sp_root);
-        }
-        return swipePanel;
-    }
 
     @Override
     public Context getContext() {
@@ -69,11 +69,11 @@ public abstract class FramBaseActivity extends FragmentActivity implements BaseV
     protected abstract void initData();
 
     protected void initLisenter() {
-        if (getSwipePanel() != null) {
-            getSwipePanel().setOnFullSwipeListener(new SwipePanel.OnFullSwipeListener() {
+        if (mSwipePanel != null) {
+            mSwipePanel.setOnFullSwipeListener(new SwipePanel.OnFullSwipeListener() {
                 @Override
                 public void onFullSwipe(int direction) {
-                    getSwipePanel().close(direction);
+                    mSwipePanel.close(direction);
                     onBackPressed();
                 }
             });
@@ -91,5 +91,13 @@ public abstract class FramBaseActivity extends FragmentActivity implements BaseV
 
     }
 
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        ActivityUtils.finishActivity(this);
+        if (mPresenterProviders != null) {
+            mPresenterProviders.clear();
+        }
 
+    }
 }

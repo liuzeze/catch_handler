@@ -33,7 +33,6 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 
-import static android.content.Intent.FLAG_ACTIVITY_NEW_TASK;
 
 public final class CactchResultActivity extends AppCompatActivity {
     private String pureStrCurrentErrorLog;
@@ -75,7 +74,7 @@ public final class CactchResultActivity extends AppCompatActivity {
                 Application application = CactchResultActivity.this.getApplication();
                 Intent intent = CactchResultActivity.this.getPackageManager()
                         .getLaunchIntentForPackage(application.getPackageName());
-                PendingIntent activity = PendingIntent.getActivity(application, 0, intent, FLAG_ACTIVITY_NEW_TASK);
+                PendingIntent activity = PendingIntent.getActivity(application, 0, intent, Intent.FLAG_ACTIVITY_NEW_TASK);
                 android.app.AlarmManager systemService = (android.app.AlarmManager) application.getSystemService(Context.ALARM_SERVICE);
                 systemService.set(AlarmManager.RTC, System.currentTimeMillis() + 200, activity);
 

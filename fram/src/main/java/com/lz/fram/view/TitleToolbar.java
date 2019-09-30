@@ -1,33 +1,39 @@
 package com.lz.fram.view;
 
+
 import android.app.Activity;
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
+import android.support.annotation.LayoutRes;
 import android.support.v7.widget.LinearLayoutCompat;
 import android.support.v7.widget.TintTypedArray;
+import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.view.Gravity;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewParent;
 import android.widget.TextView;
 
-import com.lz.fram.R;
 
+import com.lz.fram.R;
 
 /**
  * -----------作者----------日期----------变更内容-----
  * -          刘泽      2018-11-12       重写toobar 方便管理
  */
 
-public class TitleToolbar extends BaseToolbar implements View.OnClickListener {
+public class TitleToolbar extends Toolbar implements View.OnClickListener {
 
     private LinearLayoutCompat mTitleLayout;
     private TextView mTitleTextView;
     private TextView mRightTextView;
     private CharSequence mTitleText;
     private boolean mTitleVisible;
+    private boolean mTitleLayoutVisible;
 
     private TextView mSubtitleTextView;
     private CharSequence mSubTitleText;
@@ -44,155 +50,120 @@ public class TitleToolbar extends BaseToolbar implements View.OnClickListener {
     private boolean mBackVisible;
 
     private static final int DEFAULT_BACK_MARGIN_RIGHT = 8;
+    private View mMyTitleLayout;
+
+    protected OnOptionItemClickListener mOnOptionItemClickListener;
 
     public TitleToolbar(Context context) {
-        super(context);
+        this(context, null);
     }
 
     public TitleToolbar(Context context, AttributeSet attrs) {
-        super(context, attrs);
+        this(context, attrs, R.attr.toolbarStyle);
     }
 
     public TitleToolbar(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
+        initCustomView(context, attrs, defStyleAttr);
     }
 
-    @Override
-    protected void initialize(Context context, AttributeSet attrs, int defStyleAttr) {
-        super.initialize(context, attrs, defStyleAttr);
-    }
 
-    @Override
     protected void initCustomView(Context context, AttributeSet attrs, int defStyleAttr) {
         TintTypedArray a = TintTypedArray.obtainStyledAttributes(context, attrs,
                 R.styleable.Toolbar, defStyleAttr, 0);
         TypedArray typedArray = context.obtainStyledAttributes(attrs, R.styleable.SaTitleToolbar);
 
 
-        if (!isChild(mRightTextView)) {
-            mRightTextView = new TextView(context);
-            mRightTextView.setId(R.id.rightButton);
-            mRightTextView.setSingleLine();
-            mRightTextView.setEllipsize(TextUtils.TruncateAt.END);
-            mRightTextView.setGravity(Gravity.CENTER_VERTICAL);
+        //右侧显示文字或者图标
+        setRightView(context, typedArray);
+
+
+        //标题layout
+
+        int layoutResourceId = typedArray.getResourceId(R.styleable.SaTitleToolbar_titleLayout, 0);
+        if (layoutResourceId == 0) {
+            if (!isChild(mTitleLayout)) {
+                mTitleLayout = new LinearLayoutCompat(context);
+                mTitleLayout.setOrientation(LinearLayoutCompat.VERTICAL);
+                mTitleLayout.setGravity(typedArray.getInt(
+                        R.styleable.SaTitleToolbar_title_gravity, Gravity.CENTER_VERTICAL));
+
+                LayoutParams params = new LayoutParams(
+                        LayoutParams.WRAP_CONTENT, LayoutParams.MATCH_PARENT, Gravity.CENTER);
+                addView(mTitleLayout, params);
+            }
+
+            //主标题
+            setMasterTitle(context, a, typedArray);
+            //副标题
+            setSubTitle(context, a, typedArray);
+        } else {
+            if (!isChild(mMyTitleLayout)) {
+                mMyTitleLayout = LayoutInflater.from(context).inflate(layoutResourceId, null);
+                setTitleLayoutVisible(true);
+                LayoutParams params = new LayoutParams(
+                        LayoutParams.WRAP_CONTENT, LayoutParams.MATCH_PARENT, Gravity.CENTER);
+                addView(mMyTitleLayout, params);
+                mTitleVisible = false;
+                mSubTitleVisible = false;
+            }
+        }
+        //返回按钮
+        setLeftBackView(context, typedArray);
+
+        //左侧关闭文字或者图标
+        setLeftCloseView(context, typedArray);
+
+        typedArray.recycle();
+        a.recycle();
+    }
+
+
+    private void setLeftCloseView(Context context, TypedArray typedArray) {
+        if (!isChild(mCloseTextView)) {
+            mCloseTextView = new TextView(context);
+            mCloseTextView.setId(R.id.close);
+            mCloseTextView.setSingleLine();
+            mCloseTextView.setEllipsize(TextUtils.TruncateAt.END);
+            mCloseTextView.setGravity(Gravity.CENTER_VERTICAL);
 
             int closeTextAppearance =
-                    typedArray.getResourceId(R.styleable.SaTitleToolbar_rightTextAppearance, 0);
+                    typedArray.getResourceId(R.styleable.SaTitleToolbar_closeTextAppearance, 0);
 
             if (closeTextAppearance != 0) {
-                mRightTextView.setTextAppearance(context, closeTextAppearance);
+                mCloseTextView.setTextAppearance(context, closeTextAppearance);
             }
 
-            if (typedArray.hasValue(R.styleable.SaTitleToolbar_rightTextColor)) {
+            if (typedArray.hasValue(R.styleable.SaTitleToolbar_closeTextColor)) {
                 int closeTextColor =
-                        typedArray.getColor(R.styleable.SaTitleToolbar_rightTextColor, Color.WHITE);
-                mRightTextView.setTextColor(closeTextColor);
+                        typedArray.getColor(R.styleable.SaTitleToolbar_closeTextColor, Color.WHITE);
+                mCloseTextView.setTextColor(closeTextColor);
             }
 
-            if (typedArray.hasValue(R.styleable.SaTitleToolbar_rightTextSize)) {
-                mRightTextView.setTextSize(
+            if (typedArray.hasValue(R.styleable.SaTitleToolbar_closeTextSize)) {
+                mCloseTextView.setTextSize(
                         typedArray.getDimensionPixelSize(
-                                R.styleable.SaTitleToolbar_rightTextSize, 0));
+                                R.styleable.SaTitleToolbar_closeTextSize, 0));
             }
 
 
-            Drawable drawableClose = typedArray.getDrawable(R.styleable.SaTitleToolbar_rightIcon);
-            mRightTextView.setCompoundDrawablePadding(typedArray.getDimensionPixelSize(
-                    R.styleable.SaTitleToolbar_rightDrawPadding, dp2px(DEFAULT_BACK_MARGIN_RIGHT)));
+            Drawable drawableClose = typedArray.getDrawable(R.styleable.SaTitleToolbar_closeIcon);
             if (drawableClose != null) {
-                mRightTextView.setCompoundDrawablesWithIntrinsicBounds(drawableClose, null, null, null);
+                mCloseTextView.setCompoundDrawablesWithIntrinsicBounds(drawableClose, null, null, null);
             }
 
-            setRightText(typedArray.getText(R.styleable.SaTitleToolbar_rightText));
-            setRightVisible(typedArray.getBoolean(R.styleable.SaTitleToolbar_rightVisible, false));
+            setCloseText(typedArray.getText(R.styleable.SaTitleToolbar_closeText));
+            setCloseVisible(typedArray.getBoolean(R.styleable.SaTitleToolbar_closeVisible, false));
 
-            mRightTextView.setClickable(true);
-            mRightTextView.setOnClickListener(this);
+            mCloseTextView.setClickable(true);
+            mCloseTextView.setOnClickListener(this);
 
-            LayoutParams params = new LayoutParams(LayoutParams.WRAP_CONTENT,
-                    LayoutParams.MATCH_PARENT, Gravity.RIGHT);
-
-            mRightTextView.setPadding(mRightTextView.getPaddingLeft(),mRightTextView.getPaddingTop(),typedArray.getDimensionPixelSize(
-                    R.styleable.SaTitleToolbar_rightPaddingRight, dp2px(DEFAULT_BACK_MARGIN_RIGHT)),mRightTextView.getPaddingBottom());
-            addView(mRightTextView, params);
+            addView(mCloseTextView, new LayoutParams(LayoutParams.WRAP_CONTENT,
+                    LayoutParams.MATCH_PARENT, Gravity.LEFT | Gravity.CENTER_VERTICAL));
         }
+    }
 
-
-        if (!isChild(mTitleLayout)) {
-            mTitleLayout = new LinearLayoutCompat(context);
-            mTitleLayout.setOrientation(LinearLayoutCompat.VERTICAL);
-            mTitleLayout.setGravity(typedArray.getInt(
-                    R.styleable.SaTitleToolbar_title_gravity, Gravity.CENTER_VERTICAL));
-
-            LayoutParams params = new LayoutParams(
-                    LayoutParams.WRAP_CONTENT, LayoutParams.MATCH_PARENT, Gravity.CENTER);
-            addView(mTitleLayout, params);
-        }
-
-        if (!isChild(mTitleTextView, mTitleLayout)) {
-            mTitleTextView = new TextView(context);
-            mTitleTextView.setSingleLine();
-            mTitleTextView.setEllipsize(TextUtils.TruncateAt.END);
-            mTitleTextView.setGravity(Gravity.CENTER);
-            mTitleTextView.setEms(10);
-            mTitleTextView.setGravity(typedArray.getInt(
-                    R.styleable.SaTitleToolbar_title_gravity, Gravity.CENTER_VERTICAL));
-
-            int titleTextAppearance = a.getResourceId(R.styleable.Toolbar_titleTextAppearance, 0);
-            if (titleTextAppearance != 0) {
-                mTitleTextView.setTextAppearance(context, titleTextAppearance);
-            }
-
-            if (a.hasValue(R.styleable.Toolbar_titleTextColor)) {
-                int titleColor = a.getColor(R.styleable.Toolbar_titleTextColor, Color.WHITE);
-                mTitleTextView.setTextColor(titleColor);
-            }
-
-            if (typedArray.hasValue(R.styleable.SaTitleToolbar_titleTextSize)) {
-                mTitleTextView.setTextSize(
-                        typedArray.getDimensionPixelSize(R.styleable.SaTitleToolbar_backTextSize, 0));
-            }
-
-            setTitle(a.getText(R.styleable.Toolbar_title));
-            setTitleVisible(typedArray.getBoolean(R.styleable.SaTitleToolbar_titleVisible, true));
-
-            mTitleLayout.addView(mTitleTextView,
-                    new LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT));
-        }
-
-        if (!isChild(mSubtitleTextView, mTitleLayout)) {
-            mSubtitleTextView = new TextView(context);
-            mSubtitleTextView.setSingleLine();
-            mSubtitleTextView.setEllipsize(TextUtils.TruncateAt.END);
-            mSubtitleTextView.setGravity(Gravity.CENTER);
-            mSubtitleTextView.setEms(10);
-            mSubtitleTextView.setGravity(typedArray.getInt(
-                    R.styleable.SaTitleToolbar_title_gravity, Gravity.CENTER_VERTICAL));
-
-            int subTextAppearance = a.getResourceId(R.styleable.Toolbar_subtitleTextAppearance, 0);
-            if (subTextAppearance != 0) {
-                mSubtitleTextView.setTextAppearance(context, subTextAppearance);
-            }
-
-            if (a.hasValue(R.styleable.Toolbar_subtitleTextColor)) {
-                int subTitleColor = a.getColor(R.styleable.Toolbar_subtitleTextColor, Color.WHITE);
-                mSubtitleTextView.setTextColor(subTitleColor);
-            }
-
-            if (typedArray.hasValue(R.styleable.SaTitleToolbar_subtitleTextSize)) {
-                mSubtitleTextView.setTextSize(
-                        typedArray.getDimensionPixelSize(
-                                R.styleable.SaTitleToolbar_subtitleTextSize, 0));
-            }
-
-            setSubtitle(a.getText(R.styleable.Toolbar_subtitle));
-            setSubtitleVisible(
-                    typedArray.getBoolean(R.styleable.SaTitleToolbar_subtitleVisible, false));
-
-            mTitleLayout.addView(mSubtitleTextView,
-                    new LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT));
-        }
-
+    private void setLeftBackView(Context context, TypedArray typedArray) {
         if (!isChild(mBackTextView)) {
             mBackTextView = new TextView(context);
             mBackTextView.setId(R.id.back);
@@ -236,51 +207,124 @@ public class TitleToolbar extends BaseToolbar implements View.OnClickListener {
 
             addView(mBackTextView, layoutParams);
         }
+    }
 
-        if (!isChild(mCloseTextView)) {
-            mCloseTextView = new TextView(context);
-            mCloseTextView.setId(R.id.close);
-            mCloseTextView.setSingleLine();
-            mCloseTextView.setEllipsize(TextUtils.TruncateAt.END);
-            mCloseTextView.setGravity(Gravity.CENTER_VERTICAL);
+    private void setSubTitle(Context context, TintTypedArray a, TypedArray typedArray) {
+        if (!isChild(mSubtitleTextView, mTitleLayout)) {
+            mSubtitleTextView = new TextView(context);
+            mSubtitleTextView.setSingleLine();
+            mSubtitleTextView.setEllipsize(TextUtils.TruncateAt.END);
+            mSubtitleTextView.setGravity(Gravity.CENTER);
+            mSubtitleTextView.setEms(10);
+            mSubtitleTextView.setGravity(typedArray.getInt(
+                    R.styleable.SaTitleToolbar_title_gravity, Gravity.CENTER_VERTICAL));
+
+            int subTextAppearance = a.getResourceId(R.styleable.Toolbar_subtitleTextAppearance, 0);
+            if (subTextAppearance != 0) {
+                mSubtitleTextView.setTextAppearance(context, subTextAppearance);
+            }
+
+            if (a.hasValue(R.styleable.Toolbar_subtitleTextColor)) {
+                int subTitleColor = a.getColor(R.styleable.Toolbar_subtitleTextColor, Color.WHITE);
+                mSubtitleTextView.setTextColor(subTitleColor);
+            }
+
+            if (typedArray.hasValue(R.styleable.SaTitleToolbar_subtitleTextSize)) {
+                mSubtitleTextView.setTextSize(
+                        typedArray.getDimensionPixelSize(
+                                R.styleable.SaTitleToolbar_subtitleTextSize, 0));
+            }
+
+            setSubtitle(a.getText(R.styleable.Toolbar_subtitle));
+            setSubtitleVisible(
+                    typedArray.getBoolean(R.styleable.SaTitleToolbar_subtitleVisible, false));
+
+            mTitleLayout.addView(mSubtitleTextView,
+                    new LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT));
+        }
+    }
+
+    private void setMasterTitle(Context context, TintTypedArray a, TypedArray typedArray) {
+        if (!isChild(mTitleTextView, mTitleLayout)) {
+            mTitleTextView = new TextView(context);
+            mTitleTextView.setSingleLine();
+            mTitleTextView.setEllipsize(TextUtils.TruncateAt.END);
+            mTitleTextView.setGravity(Gravity.CENTER);
+            mTitleTextView.setEms(10);
+            mTitleTextView.setGravity(typedArray.getInt(
+                    R.styleable.SaTitleToolbar_title_gravity, Gravity.CENTER_VERTICAL));
+
+            int titleTextAppearance = a.getResourceId(R.styleable.Toolbar_titleTextAppearance, 0);
+            if (titleTextAppearance != 0) {
+                mTitleTextView.setTextAppearance(context, titleTextAppearance);
+            }
+
+            if (a.hasValue(R.styleable.Toolbar_titleTextColor)) {
+                int titleColor = a.getColor(R.styleable.Toolbar_titleTextColor, Color.WHITE);
+                mTitleTextView.setTextColor(titleColor);
+            }
+
+            if (typedArray.hasValue(R.styleable.SaTitleToolbar_titleTextSize)) {
+                mTitleTextView.setTextSize(
+                        typedArray.getDimensionPixelSize(R.styleable.SaTitleToolbar_backTextSize, 0));
+            }
+
+            setTitle(a.getText(R.styleable.Toolbar_title));
+            setTitleVisible(typedArray.getBoolean(R.styleable.SaTitleToolbar_titleVisible, true));
+
+            mTitleLayout.addView(mTitleTextView,
+                    new LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT));
+        }
+    }
+
+    private void setRightView(Context context, TypedArray typedArray) {
+        if (!isChild(mRightTextView)) {
+            mRightTextView = new TextView(context);
+            mRightTextView.setId(R.id.rightButton);
+            mRightTextView.setSingleLine();
+            mRightTextView.setEllipsize(TextUtils.TruncateAt.END);
+            mRightTextView.setGravity(Gravity.CENTER_VERTICAL);
 
             int closeTextAppearance =
-                    typedArray.getResourceId(R.styleable.SaTitleToolbar_closeTextAppearance, 0);
+                    typedArray.getResourceId(R.styleable.SaTitleToolbar_rightTextAppearance, 0);
 
             if (closeTextAppearance != 0) {
-                mCloseTextView.setTextAppearance(context, closeTextAppearance);
+                mRightTextView.setTextAppearance(context, closeTextAppearance);
             }
 
-            if (typedArray.hasValue(R.styleable.SaTitleToolbar_closeTextColor)) {
+            if (typedArray.hasValue(R.styleable.SaTitleToolbar_rightTextColor)) {
                 int closeTextColor =
-                        typedArray.getColor(R.styleable.SaTitleToolbar_closeTextColor, Color.WHITE);
-                mCloseTextView.setTextColor(closeTextColor);
+                        typedArray.getColor(R.styleable.SaTitleToolbar_rightTextColor, Color.WHITE);
+                mRightTextView.setTextColor(closeTextColor);
             }
 
-            if (typedArray.hasValue(R.styleable.SaTitleToolbar_closeTextSize)) {
-                mCloseTextView.setTextSize(
+            if (typedArray.hasValue(R.styleable.SaTitleToolbar_rightTextSize)) {
+                mRightTextView.setTextSize(
                         typedArray.getDimensionPixelSize(
-                                R.styleable.SaTitleToolbar_closeTextSize, 0));
+                                R.styleable.SaTitleToolbar_rightTextSize, 0));
             }
 
 
-            Drawable drawableClose = typedArray.getDrawable(R.styleable.SaTitleToolbar_closeIcon);
-            if (drawableClose != null) {
-                mCloseTextView.setCompoundDrawablesWithIntrinsicBounds(drawableClose, null, null, null);
+            Drawable rightIcon = typedArray.getDrawable(R.styleable.SaTitleToolbar_rightIcon);
+            mRightTextView.setCompoundDrawablePadding(typedArray.getDimensionPixelSize(
+                    R.styleable.SaTitleToolbar_rightDrawPadding, dp2px(DEFAULT_BACK_MARGIN_RIGHT)));
+            if (rightIcon != null) {
+                mRightTextView.setCompoundDrawablesWithIntrinsicBounds(rightIcon, null, null, null);
             }
 
-            setCloseText(typedArray.getText(R.styleable.SaTitleToolbar_closeText));
-            setCloseVisible(typedArray.getBoolean(R.styleable.SaTitleToolbar_closeVisible, false));
+            setRightText(typedArray.getText(R.styleable.SaTitleToolbar_rightText));
+            setRightVisible(typedArray.getBoolean(R.styleable.SaTitleToolbar_rightVisible, false));
 
-            mCloseTextView.setClickable(true);
-            mCloseTextView.setOnClickListener(this);
+            mRightTextView.setClickable(true);
+            mRightTextView.setOnClickListener(this);
 
-            addView(mCloseTextView, new LayoutParams(LayoutParams.WRAP_CONTENT,
-                    LayoutParams.MATCH_PARENT, Gravity.LEFT | Gravity.CENTER_VERTICAL));
+            LayoutParams params = new LayoutParams(LayoutParams.WRAP_CONTENT,
+                    LayoutParams.MATCH_PARENT, Gravity.RIGHT);
+
+            mRightTextView.setPadding(mRightTextView.getPaddingLeft(), mRightTextView.getPaddingTop(), typedArray.getDimensionPixelSize(
+                    R.styleable.SaTitleToolbar_rightPaddingRight, dp2px(DEFAULT_BACK_MARGIN_RIGHT)), mRightTextView.getPaddingBottom());
+            addView(mRightTextView, params);
         }
-
-        typedArray.recycle();
-        a.recycle();
     }
 
     @Override
@@ -312,7 +356,9 @@ public class TitleToolbar extends BaseToolbar implements View.OnClickListener {
 
     public void setTitleVisible(boolean visible) {
         mTitleVisible = visible;
-        mTitleTextView.setVisibility(mTitleVisible ? VISIBLE : GONE);
+        if (mTitleTextView != null) {
+            mTitleTextView.setVisibility(mTitleVisible ? VISIBLE : GONE);
+        }
     }
 
     public boolean getTitleVisible() {
@@ -348,7 +394,9 @@ public class TitleToolbar extends BaseToolbar implements View.OnClickListener {
 
     public TitleToolbar setSubtitleVisible(boolean visible) {
         mSubTitleVisible = visible;
-        mSubtitleTextView.setVisibility(visible ? VISIBLE : GONE);
+        if (mSubtitleTextView != null) {
+            mSubtitleTextView.setVisibility(visible ? VISIBLE : GONE);
+        }
         return this;
     }
 
@@ -374,13 +422,17 @@ public class TitleToolbar extends BaseToolbar implements View.OnClickListener {
     }
 
     public TitleToolbar setCloseTextColor(int color) {
-        mCloseTextView.setTextColor(color);
+        if (mCloseTextView != null) {
+            mCloseTextView.setTextColor(color);
+        }
         return this;
     }
 
     public TitleToolbar setCloseVisible(boolean visible) {
         mCloseVisible = visible;
-        mCloseTextView.setVisibility(mCloseVisible ? VISIBLE : GONE);
+        if (mCloseTextView != null) {
+            mCloseTextView.setVisibility(mCloseVisible ? VISIBLE : GONE);
+        }
         return this;
     }
 
@@ -407,13 +459,17 @@ public class TitleToolbar extends BaseToolbar implements View.OnClickListener {
     }
 
     public TitleToolbar setRightTextColor(int color) {
-        mRightTextView.setTextColor(color);
+        if (mRightTextView != null) {
+            mRightTextView.setTextColor(color);
+        }
         return this;
     }
 
     public TitleToolbar setRightVisible(boolean visible) {
         mRightVisible = visible;
-        mRightTextView.setVisibility(mRightVisible ? VISIBLE : GONE);
+        if (mRightTextView != null) {
+            mRightTextView.setVisibility(mRightVisible ? VISIBLE : GONE);
+        }
         return this;
     }
 
@@ -440,13 +496,17 @@ public class TitleToolbar extends BaseToolbar implements View.OnClickListener {
     }
 
     public TitleToolbar setBackTextColor(int color) {
-        mBackTextView.setTextColor(color);
+        if (mBackTextView != null) {
+            mBackTextView.setTextColor(color);
+        }
         return this;
     }
 
     public TitleToolbar setBackVisible(boolean visible) {
         mBackVisible = visible;
-        mBackTextView.setVisibility(mBackVisible ? VISIBLE : GONE);
+        if (mBackTextView != null) {
+            mBackTextView.setVisibility(mBackVisible ? VISIBLE : GONE);
+        }
         return this;
     }
 
@@ -494,4 +554,63 @@ public class TitleToolbar extends BaseToolbar implements View.OnClickListener {
         }
         return this;
     }
+
+    public TitleToolbar setTitleLayoutVisible(boolean visible) {
+        mTitleLayoutVisible = visible;
+        if (mMyTitleLayout != null) {
+            mMyTitleLayout.setVisibility(mTitleLayoutVisible ? VISIBLE : GONE);
+        }
+        return this;
+
+    }
+
+    public boolean getTitleLayoutVisible() {
+        return mTitleLayoutVisible;
+    }
+
+    public TitleToolbar setTitleLayout(@LayoutRes int layoutId) {
+        setTitleLayout(LayoutInflater.from(getContext()).inflate(layoutId, null));
+        return this;
+    }
+
+    public TitleToolbar setTitleLayout(View view) {
+        if (mMyTitleLayout != null) {
+            removeView(mMyTitleLayout);
+            mMyTitleLayout = null;
+        }
+        if (mTitleLayout != null) {
+            removeView(mTitleLayout);
+            mTitleLayout = null;
+        }
+        mMyTitleLayout = view;
+        LayoutParams params = new LayoutParams(
+                LayoutParams.WRAP_CONTENT, LayoutParams.MATCH_PARENT, Gravity.CENTER);
+        addView(view, params);
+        mTitleLayoutVisible = true;
+        mTitleVisible = false;
+        mSubTitleVisible = false;
+        return this;
+
+    }
+
+    public boolean isChild(View view) {
+        return view != null && view.getParent() == this;
+    }
+
+    public boolean isChild(View view, ViewParent parent) {
+        return view != null && view.getParent() == parent;
+    }
+
+    public void setOnOptionItemClickListener(OnOptionItemClickListener listener) {
+        mOnOptionItemClickListener = listener;
+    }
+
+    public interface OnOptionItemClickListener {
+        void onOptionItemClick(View v);
+    }
+
+    public int dp2px(float dp) {
+        return Math.round(dp * getResources().getDisplayMetrics().density);
+    }
+
 }

@@ -1,5 +1,6 @@
 package com.lz.fram.base;
 
+
 import android.content.Context;
 import android.content.res.Configuration;
 import android.os.Bundle;
@@ -10,7 +11,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.lz.fram.inject.PresenterDispatch;
+import com.lz.fram.inject.InjectManager;
 import com.lz.fram.inject.PresenterProviders;
 
 /**
@@ -21,6 +22,7 @@ public abstract class FramBaseFragment extends Fragment implements VisibleFragme
 
 
     protected Context mContext;
+    private PresenterProviders mPresenterProviders;
 
     @Override
     public void onAttach(Context context) {
@@ -30,22 +32,15 @@ public abstract class FramBaseFragment extends Fragment implements VisibleFragme
 
     @Nullable
     @Override
-    public View onCreateView(LayoutInflater inflater, @io.reactivex.annotations.Nullable ViewGroup container, Bundle savedInstanceState) {
-        View inflate = getRootView(inflater, container);
-        return inflate;
-    }
-
-    private View getRootView(LayoutInflater inflater, @io.reactivex.annotations.Nullable ViewGroup container) {
-        View inflate = InjectManager.getView(getClass(), inflater, container);
-        PresenterDispatch presenterDispatch = PresenterProviders.inject(this).presenterCreate();
-        presenterDispatch.attachView(this, getLifecycle());
-
+    public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, Bundle savedInstanceState) {
+        View inflate = InjectManager.inject(this, inflater, container);
+        mPresenterProviders = InjectManager.attachPresenter(this, getLifecycle());
         return inflate;
     }
 
 
     @Override
-    public void onViewCreated(@NonNull View view, @io.reactivex.annotations.Nullable Bundle savedInstanceState) {
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         initData();
         initLisenter();
@@ -104,6 +99,9 @@ public abstract class FramBaseFragment extends Fragment implements VisibleFragme
     public void onDestroy() {
         super.onDestroy();
         visibleFragmentProxy.onDestroy();
+        if (mPresenterProviders != null) {
+            mPresenterProviders.clear();
+        }
     }
 
     @Override

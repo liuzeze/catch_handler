@@ -1,6 +1,4 @@
-package com.lz.fram.base;
-
-import com.lz.fram.R;
+package com.lz.fram.inject;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -10,13 +8,14 @@ import java.lang.annotation.Target;
 /**
  * -----------作者----------日期----------变更内容-----
  * -          刘泽      2019-04-03       创建class
+ *
  * @author Administrator
  */
 
 @Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.TYPE)
+@Target({ElementType.TYPE})
 public @interface InjectLayout {
-    int layoutId();
+    int layoutId() default 0;
 
     boolean isShowActTitle() default true;
 

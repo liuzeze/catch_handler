@@ -19,6 +19,7 @@ public class GsonAdapter {
                 .registerTypeAdapter(double.class, new DoubleDefault0Adapter())
                 .registerTypeAdapter(Long.class, new LongDefault0Adapter())
                 .registerTypeAdapter(long.class, new LongDefault0Adapter())
+                .registerTypeAdapter(String.class, new StringDefaultAdapter())
                 .create();
 
         return gson;

@@ -1,16 +1,14 @@
 package com.lz.httplib.upload;
 
 
-import com.lz.httplib.transformer.Transformer;
-
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-
-
 import io.reactivex.Observable;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.schedulers.Schedulers;
 import okhttp3.MediaType;
 import okhttp3.MultipartBody;
 import okhttp3.RequestBody;
@@ -20,15 +18,15 @@ import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory;
 import retrofit2.converter.gson.GsonConverterFactory;
 
 
- public class UploadRetrofit {
+public class RxUploadFactory {
 
-    private static UploadRetrofit instance;
+    private static RxUploadFactory instance;
     private Retrofit mRetrofit;
 
     private static String baseUrl = "https://api.github.com/";
 
 
-    public UploadRetrofit() {
+    public RxUploadFactory() {
         mRetrofit = new Retrofit.Builder()
                 .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
                 .addConverterFactory(GsonConverterFactory.create())
@@ -36,12 +34,12 @@ import retrofit2.converter.gson.GsonConverterFactory;
                 .build();
     }
 
-    public static UploadRetrofit getInstance() {
+    public static RxUploadFactory getInstance() {
 
         if (instance == null) {
-            synchronized (UploadRetrofit.class) {
+            synchronized (RxUploadFactory.class) {
                 if (instance == null) {
-                    instance = new UploadRetrofit();
+                    instance = new RxUploadFactory();
                 }
             }
 
@@ -61,10 +59,10 @@ import retrofit2.converter.gson.GsonConverterFactory;
      * @param filePath  图片路径
      * @return Observable
      */
-    public  Observable<ResponseBody> uploadImage(String uploadUrl, String filePath) {
+    public Observable<ResponseBody> uploadImage(String uploadUrl, String filePath,Map<String, String> paramsMap) {
         List<String> filePaths = new ArrayList<>();
         filePaths.add(filePath);
-        return uploadFilesWithParams(uploadUrl, "uploaded_file", null, filePaths);
+        return uploadFilesWithParams(uploadUrl, "uploaded_file", paramsMap, filePaths);
     }
 
     /**
@@ -74,8 +72,8 @@ import retrofit2.converter.gson.GsonConverterFactory;
      * @param filePaths 图片路径
      * @return Observable
      */
-    public  Observable<ResponseBody> uploadImages(String uploadUrl, List<String> filePaths) {
-        return uploadFilesWithParams(uploadUrl, "uploaded_file", null, filePaths);
+    public Observable<ResponseBody> uploadImages(String uploadUrl, List<String> filePaths,Map<String, String> paramsMap) {
+        return uploadFilesWithParams(uploadUrl, "uploaded_file", paramsMap, filePaths);
     }
 
     /**
@@ -83,18 +81,18 @@ import retrofit2.converter.gson.GsonConverterFactory;
      *
      * @param uploadUrl 上传图片的服务器url
      * @param fileName  后台协定的接受图片的name（没特殊要求就可以随便写）
-     * @param paramsMap       普通参数
+     * @param paramsMap 普通参数
      * @param filePaths 图片路径
      * @return Observable
      */
-    public  Observable<ResponseBody> uploadFilesWithParams(String uploadUrl, String fileName, Map<String, Object> paramsMap, List<String> filePaths) {
+    public Observable<ResponseBody> uploadFilesWithParams(String uploadUrl, String fileName, Map<String, String> paramsMap, List<String> filePaths) {
 
         MultipartBody.Builder builder = new MultipartBody.Builder()
                 .setType(MultipartBody.FORM);
 
         if (null != paramsMap) {
             for (String key : paramsMap.keySet()) {
-                builder.addFormDataPart(key, (String) paramsMap.get(key));
+                builder.addFormDataPart(key,  paramsMap.get(key));
             }
         }
 
@@ -107,11 +105,12 @@ import retrofit2.converter.gson.GsonConverterFactory;
 
         List<MultipartBody.Part> parts = builder.build().parts();
 
-        return UploadRetrofit
+        return RxUploadFactory
                 .getInstance()
                 .getRetrofit()
                 .create(UploadFileApi.class)
                 .uploadFiles(uploadUrl, parts)
-                .compose(Transformer.<ResponseBody>switchSchedulersObser());
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread());
     }
 }

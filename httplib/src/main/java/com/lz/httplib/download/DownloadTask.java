@@ -187,7 +187,7 @@ public class DownloadTask {
                 if (childFinshCount % THREAD_COUNT != 0) return;
                 mTmpFile.renameTo(new File(mParamBean.filePath, mParamBean.fileName));
                 resetStutus();
-                System.out.println("完成"+mParamBean.isDownloading);
+                Log.d("", "完成" + mParamBean.isDownloading);
                 mParamBean.bytesRead = mFileLength;
                 mParamBean.contentLength = mFileLength;
                 mParamBean.progress = 100;

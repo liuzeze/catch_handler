@@ -1,21 +1,19 @@
 package lz.com.catch_handler;
 
-import android.graphics.Color;
 import android.view.View;
 
-
 import com.lz.fram.base.FramBaseActivity;
-import com.lz.fram.base.InjectLayout;
+import com.lz.fram.inject.InjectLayout;
+import com.lz.fram.scope.AttachPresenter;
 import com.lz.httplib.RxRequestUtils;
+import com.lz.httplib.bean.ParseInfo;
+import com.lz.httplib.callback.APICallBack;
 import com.lz.httplib.http.ConfigModule;
 import com.lz.httplib.http.GlobalConfigBuild;
-import com.lz.httplib.transformer.Transformer;
 
-import io.reactivex.functions.Consumer;
 
-@InjectLayout(layoutId = R.layout.activity_main,isShowActTitle = true)
+@InjectLayout(layoutId = R.layout.activity_main, isShowActTitle = true)
 public class MainActivity extends FramBaseActivity {
-
 
     @Override
     protected void initData() {
@@ -27,42 +25,34 @@ public class MainActivity extends FramBaseActivity {
                     @Override
                     public void exceptionInfo(@Nullable ExceptionInfoBean exceptionInfoBean, @Nullable Throwable throwable) {
                         StringBuilder erreoStr = CatchHandlerHelper.getExceptionInfoString(MainActivity.this, exceptionInfoBean);
-                        RxRequestUtils
-                                .create(ApiService.class)
-                                .getNewsArticle2("", "")
-                                .compose(Transformer.<String>switchSchedulersObser()).subscribe(new Consumer<String>() {
-                            @Override
-                            public void accept(String s) throws Exception {
-                                System.out.println("============" + s);
-                            }
-                        });
+
                     }
                 })
 //                .setUrl("钉钉机器人上传地址")
-                .build();
+                .build();*/
 //        StatusView.init(this).showContentView();
-
-*/
         RxRequestUtils.initConfig(new ConfigModule() {
             @Override
             public void applyOptions(GlobalConfigBuild.Builder builder) {
+                builder
+                        .addInterceptor(new LoggerInterceptor())
+                        .baseurl("http://lf.snssdk.com/api/")
+                        .setPaeseInfor(new ParseInfo("errorCode", "data", "errorMsg", "0"))
+                        .setAPICallBack(new APICallBack() {
+                            @Override
+                            public String callback(String code, String resultData) {
+                                return null;
+                            }
+                        });
 
-                builder.baseurl("http://lf.snssdk.com/api/");
-
-            }
-        });
-        RxRequestUtils
-                .create(ApiService.class)
-                .getNewsArticle2("推荐", "")
-                .compose(Transformer.<String>switchSchedulersObser()).subscribe(new Consumer<String>() {
-            @Override
-            public void accept(String s) throws Exception {
-                System.out.println("============" + s);
             }
         });
     }
 
+    @AttachPresenter
+    MainPresenter mMainPresenter;
+
     public void crash(View view) {
-        int i = 1 / 0;
+        mMainPresenter.crash();
     }
 }

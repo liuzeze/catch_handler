@@ -26,6 +26,10 @@
 
 
     <declare-styleable name="SaTitleToolbar">
+
+
+        <!--自定义标题-->
+        <attr name="titleLayout" format="reference" />
         <!--主标题-->
         <attr name="titleVisible" format="boolean" />
         <attr name="titleTextSize" format="dimension" />
@@ -81,7 +85,6 @@
         <attr name="backIcon" format="reference" />
         <attr name="backMarginRight" format="dimension" />
     </declare-styleable>
-
 
 
     <style name="Toolbar_Title_Appearance" parent="Base.TextAppearance.AppCompat.Widget.ActionBar.Title">

@@ -1,5 +1,6 @@
 package com.lz.fram.view;
 
+
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
@@ -18,8 +19,11 @@ import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.SystemClock;
 import android.support.annotation.DrawableRes;
+import android.support.annotation.IdRes;
 import android.support.annotation.IntDef;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
+import android.support.v4.app.Fragment;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.util.TypedValue;
@@ -28,15 +32,13 @@ import android.view.View;
 import android.view.ViewConfiguration;
 import android.view.ViewGroup;
 import android.view.ViewParent;
-import android.widget.FrameLayout;
 import android.widget.LinearLayout;
+
 
 import com.lz.fram.R;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
-
-import io.reactivex.annotations.Nullable;
 
 /**
  * -----------作者----------日期----------变更内容-----
@@ -97,6 +99,7 @@ public class SwipePanel extends LinearLayout {
 
     public SwipePanel(@NonNull Context context) {
         this(context, null);
+
     }
 
     public SwipePanel(@NonNull Context context, @Nullable AttributeSet attrs) {
@@ -140,7 +143,75 @@ public class SwipePanel extends LinearLayout {
 
             ta.recycle();
         }
+        setLeftDrawable(R.mipmap.ic_white_back);
+        setLeftCenter(false);
+        setLeftEdgeSize(dp2px(100));
+
     }
+
+
+    public static SwipePanel init(Activity activity) {
+        View contentView = ((ViewGroup) activity.findViewById(android.R.id.content)).getChildAt(0);
+        return bindView(contentView);
+    }
+
+    public static SwipePanel init(Activity activity, @IdRes int resId) {
+        View contentView = activity.findViewById(resId);
+        return bindView(contentView);
+    }
+
+    public static SwipePanel init(View contentView) {
+        return bindView(contentView);
+    }
+
+    public static SwipePanel init(Fragment fragment) {
+        View view = fragment.getView();
+        return bindView(view);
+    }
+
+    public static SwipePanel init(Fragment fragment, @IdRes int resourceId) {
+        View rootView = fragment.getView();
+        View contentView = null;
+        if (rootView != null) {
+            contentView = rootView.findViewById(resourceId);
+        }
+        return bindView(contentView);
+    }
+
+    private static SwipePanel bindView(View contentView) {
+        if (contentView == null) {
+            new Throwable("contentView can not be null");
+        }
+        ViewGroup parent = (ViewGroup) contentView.getParent();
+        if (parent != null) {
+            ViewGroup.LayoutParams layoutParams = contentView.getLayoutParams();
+            int index = parent.indexOfChild(contentView);
+            parent.removeView(contentView);
+            SwipePanel statusView = new SwipePanel(contentView.getContext());
+            statusView.addView(contentView);
+            if (contentView.getVisibility() == View.GONE) {
+                statusView.setVisibility(GONE);
+            }
+            parent.addView(statusView, index, layoutParams);
+            //兼容linearLayout的权重属性
+            if (layoutParams instanceof LayoutParams) {
+                if (((LayoutParams) layoutParams).weight == 1
+                        && layoutParams.width == 0) {
+                    ViewGroup.LayoutParams childParams = contentView.getLayoutParams();
+                    childParams.width = LayoutParams.MATCH_PARENT;
+                    contentView.setLayoutParams(childParams);
+                }
+            }
+
+            return statusView;
+        } else {
+            SwipePanel statusView = new SwipePanel(contentView.getContext());
+            statusView.addView(contentView);
+            return statusView;
+        }
+
+    }
+
 
     public void setLeftSwipeColor(int color) {
         setSwipeColor(color, LEFT);

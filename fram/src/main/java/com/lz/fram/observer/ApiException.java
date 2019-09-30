@@ -3,17 +3,16 @@ package com.lz.fram.observer;
 
 import android.text.TextUtils;
 
+
 import org.apache.http.conn.ConnectTimeoutException;
 import org.json.JSONException;
 
-import java.io.IOException;
 import java.io.NotSerializableException;
 import java.net.ConnectException;
 import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
 
 import retrofit2.HttpException;
-
 
 /**
  * -------- 日期 ---------- 维护人 ------------ 变更内容 --------
@@ -47,11 +46,11 @@ public class ApiException extends Exception {
             ex = new ApiException(httpException, httpException.code());
             try {
                 if (TextUtils.isEmpty(httpException.message())) {
-                    ex.message = httpException.response().errorBody().string();
+                    ex.message = httpException.getMessage();
                 } else {
                     ex.message = httpException.message();
                 }
-            } catch (IOException e1) {
+            } catch (Exception e1) {
                 e1.printStackTrace();
                 ex.message = e1.getMessage();
             }

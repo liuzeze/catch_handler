@@ -3,6 +3,5 @@
     <item name="close" type="id" />
     <item name="rightButton" type="id" />
     <item name="back" type="id" />
-    <item name="sp_root" type="id" />
 
 </resources>
