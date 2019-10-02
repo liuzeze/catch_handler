@@ -10,6 +10,8 @@ import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
+import android.os.Handler;
+import android.os.Looper;
 import android.view.Gravity;
 import android.view.ViewGroup;
 import android.view.Window;
@@ -31,12 +33,22 @@ public class LoadDialog {
 
     private Dialog mDialog;
 
-    public LoadDialog(Context context) {
+    public LoadDialog(final Context context) {
 
         if (!isContextExisted(context)) {
             return;
         }
-        initView(context);
+
+        if (Thread.currentThread() == Looper.getMainLooper().getThread()) {
+            initView(context);
+        } else {
+            new Handler(Looper.getMainLooper()).post(new Runnable() {
+                @Override
+                public void run() {
+                    initView(context);
+                }
+            });
+        }
     }
 
     public Dialog getDialog() {

@@ -18,10 +18,10 @@ import io.reactivex.ObservableTransformer;
  */
 public class Transformer {
 
-    public static ObservableTransformer<String, String> switchSchedulersStr() {
 
+    public static ObservableTransformer<String, String> switchSchedulersStr() {
         LoadDialog dialog = new LoadDialog(ActivityUtils.currentActivity());
-        return JsonParseTransformer.switchSchedulersStr(dialog.getDialog());
+        return JsonParseTransformer.switchSchedulersType(String.class, dialog.getDialog());
     }
 
     public static <T> ObservableTransformer<String, T> switchSchedulersObj(final Class<T> type) {
@@ -29,13 +29,31 @@ public class Transformer {
         return JsonParseTransformer.switchSchedulersObj(type, dialog.getDialog());
     }
 
+
     public static <T> ObservableTransformer<String, List<T>> switchSchedulersArray(final Class<T> clazz) {
         LoadDialog dialog = new LoadDialog(ActivityUtils.currentActivity());
         return JsonParseTransformer.switchSchedulersArray(clazz, dialog.getDialog());
     }
 
-    public static <T> ObservableTransformer<String, T> switchSchedulers(final Type type) {
+    public static <T> ObservableTransformer<String, T> switchSchedulersType(final Type type) {
         LoadDialog dialog = new LoadDialog(ActivityUtils.currentActivity());
-        return JsonParseTransformer.switchSchedulers(type, dialog.getDialog());
+        return JsonParseTransformer.switchSchedulersType(type, dialog.getDialog());
     }
+
+
+    public static <T> ObservableTransformer<String, T> switchSchedulersNoBase(final Class<T> clazz) {
+        LoadDialog dialog = new LoadDialog(ActivityUtils.currentActivity());
+        return JsonParseTransformer.switchSchedulersNoBase(clazz, dialog.getDialog());
+    }
+
+
+    public static <T> ObservableTransformer<T, T> switchThreadDialog() {
+        LoadDialog dialog = new LoadDialog(ActivityUtils.currentActivity());
+        return JsonParseTransformer.<T>switchThread(dialog.getDialog());
+    }
+
+    public static <T> ObservableTransformer<T, T> switchThread() {
+        return JsonParseTransformer.<T>switchThread(null);
+    }
+
 }

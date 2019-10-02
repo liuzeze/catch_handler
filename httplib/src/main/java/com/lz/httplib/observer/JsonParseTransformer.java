@@ -30,38 +30,6 @@ import io.reactivex.schedulers.Schedulers;
 public class JsonParseTransformer {
 
 
-    public static ObservableTransformer<String, String> switchSchedulersStr(final Dialog dialog) {
-
-        return new ObservableTransformer<String, String>() {
-            @Override
-            public ObservableSource<String> apply(Observable<String> upstream) {
-                return upstream
-                        .subscribeOn(Schedulers.io())
-                        .unsubscribeOn(Schedulers.io())
-                        .map(new MapFunction())
-                        .doOnSubscribe(new Consumer<Disposable>() {
-                            @Override
-                            public void accept(Disposable disposable) throws Exception {
-                                if (dialog != null) {
-                                    dialog.show();
-                                }
-
-                            }
-                        })
-                        .subscribeOn(AndroidSchedulers.mainThread())
-                        .observeOn(AndroidSchedulers.mainThread())
-                        .doFinally(new Action() {
-                            @Override
-                            public void run() throws Exception {
-                                if (dialog != null) {
-                                    dialog.dismiss();
-                                }
-                            }
-                        });
-            }
-        };
-    }
-
     public static <T> ObservableTransformer<String, T> switchSchedulersObj(final Class<T> type, final Dialog dialog) {
 
         return new ObservableTransformer<String, T>() {
@@ -71,10 +39,10 @@ public class JsonParseTransformer {
                         .subscribeOn(Schedulers.io())
                         .unsubscribeOn(Schedulers.io())
                         .map(new MapFunction())
-                        .flatMap(new Function<String, ObservableSource<T>>() {
+                        .map(new Function<String, T>() {
                             @Override
-                            public ObservableSource<T> apply(String s) throws Exception {
-                                return Observable.just(JSONFactory.fromJson(TextUtils.isEmpty(s) ? "{}" : s, type));
+                            public T apply(String s) throws Exception {
+                                return JSONFactory.fromJson(TextUtils.isEmpty(s) ? "{}" : s, type);
                             }
                         })
                         .doOnSubscribe(new Consumer<Disposable>() {
@@ -100,7 +68,7 @@ public class JsonParseTransformer {
         };
     }
 
-    public static <T> ObservableTransformer<String, List<T>> switchSchedulersArray(final Class<T> clazz,final  Dialog dialog) {
+    public static <T> ObservableTransformer<String, List<T>> switchSchedulersArray(final Class<T> clazz, final Dialog dialog) {
         return new ObservableTransformer<String, List<T>>() {
             @Override
             public ObservableSource<List<T>> apply(Observable<String> upstream) {
@@ -108,12 +76,12 @@ public class JsonParseTransformer {
                         .subscribeOn(Schedulers.io())
                         .unsubscribeOn(Schedulers.io())
                         .map(new MapFunction())
-                        .flatMap(new Function<String, ObservableSource<List<T>>>() {
+                        .map(new Function<String, List<T>>() {
                             @Override
-                            public ObservableSource<List<T>> apply(String s) throws Exception {
+                            public List<T> apply(String s) throws Exception {
                                 Type type = TypeToken.getParameterized(List.class, clazz).getType();
                                 List<T> list = JSONFactory.fromJson(s, type);
-                                return Observable.just(list);
+                                return list;
                             }
                         })
                         .doOnSubscribe(new Consumer<Disposable>() {
@@ -139,7 +107,7 @@ public class JsonParseTransformer {
         };
     }
 
-    public static <T> ObservableTransformer<String, T> switchSchedulers(final Type type,final  Dialog dialog) {
+    public static <T> ObservableTransformer<String, T> switchSchedulersType(final Type type, final Dialog dialog) {
 
 
         return new ObservableTransformer<String, T>() {
@@ -149,11 +117,11 @@ public class JsonParseTransformer {
                         .subscribeOn(Schedulers.io())
                         .unsubscribeOn(Schedulers.io())
                         .map(new MapFunction())
-                        .flatMap(new Function<String, ObservableSource<T>>() {
+                        .map(new Function<String, T>() {
                             @Override
-                            public ObservableSource<T> apply(String s) throws Exception {
+                            public T apply(String s) throws Exception {
                                 T t = JSONFactory.fromJson(s, type);
-                                return Observable.just(t);
+                                return t;
                             }
                         })
                         .doOnSubscribe(new Consumer<Disposable>() {
@@ -178,5 +146,77 @@ public class JsonParseTransformer {
             }
         };
     }
+
+
+    public static <T> ObservableTransformer<String, T> switchSchedulersNoBase(final Type type, final Dialog dialog) {
+
+
+        return new ObservableTransformer<String, T>() {
+            @Override
+            public ObservableSource<T> apply(Observable<String> upstream) {
+                return upstream
+                        .subscribeOn(Schedulers.io())
+                        .unsubscribeOn(Schedulers.io())
+                        .map(new Function<String, T>() {
+                            @Override
+                            public T apply(String s) throws Exception {
+                                T t = JSONFactory.fromJson(s, type);
+                                return t;
+                            }
+                        })
+                        .doOnSubscribe(new Consumer<Disposable>() {
+                            @Override
+                            public void accept(Disposable disposable) throws Exception {
+                                if (dialog != null) {
+                                    dialog.show();
+                                }
+
+                            }
+                        })
+                        .subscribeOn(AndroidSchedulers.mainThread())
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .doFinally(new Action() {
+                            @Override
+                            public void run() throws Exception {
+                                if (dialog != null) {
+                                    dialog.dismiss();
+                                }
+                            }
+                        });
+            }
+        };
+    }
+
+    public static <T> ObservableTransformer<T, T> switchThread(final Dialog dialog) {
+
+
+        return new ObservableTransformer<T, T>() {
+            @Override
+            public ObservableSource<T> apply(Observable<T> upstream) {
+                return upstream
+                        .subscribeOn(Schedulers.io())
+                        .unsubscribeOn(Schedulers.io())
+                        .doOnSubscribe(new Consumer<Disposable>() {
+                            @Override
+                            public void accept(Disposable disposable) throws Exception {
+                                if (dialog != null) {
+                                    dialog.show();
+                                }
+                            }
+                        })
+                        .subscribeOn(AndroidSchedulers.mainThread())
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .doFinally(new Action() {
+                            @Override
+                            public void run() throws Exception {
+                                if (dialog != null) {
+                                    dialog.dismiss();
+                                }
+                            }
+                        });
+            }
+        };
+    }
+
 
 }
