@@ -29,7 +29,47 @@
  
  ```
  
+# Http请求
+```
 
+
+        RxHttp
+                .create(ApiServer.class)
+                .get("client_credentials",
+                        "PPSSlAbaCYZpe8IhLQwWWinS",
+                        "noqd2GKQmrpwhLu3hEuUi9X5cGQDfGw6")
+                .compose(Transformer.<ResToken>switchThread())
+                .observeOn(Schedulers.io())
+                .flatMap(new Function<ResToken, ObservableSource<String>>() {
+                    @Override
+                    public ObservableSource<String> apply(ResToken resToken) throws Exception {
+                        System.out.println("============Token 请求成功");
+                        ReqToken reqToken = new ReqToken();
+                        reqToken.image = "2164728647816478264781242746127846";
+                        reqToken.image_type = "BASE64";
+                        reqToken.face_field = "age,beauty,expression,faceshape,gender,glasses,landmark,race,qualities";
+                        reqToken.max_face_num = "10";
+                        reqToken.face_type = "LIVE";
+                        reqToken.access_token = resToken.access_token;
+                        return RxHttp
+                                .create()
+                                .post("https://aip.baidubce.com/rest/2.0/face/v3/detect", reqToken)
+                                .compose(Transformer.<String>switchThread());
+                    }
+                })
+                .subscribe(new CommonObserver<String>(mBaseView) {
+                    @Override
+                    public void onNext(String s) {
+                        System.out.println("=======" + s);
+                    }
+
+                    @Override
+                    protected void onError(int code, String mes) {
+                        super.onError(code, mes);
+                    }
+                });
+
+```
 <table align="center">
     <tr align="center">
       <td><img src="https://github.com/liuzeze/libary/blob/master/img/Screenshot_2019-01-14-11-22-58.png" width="280" height="280"/></td>
