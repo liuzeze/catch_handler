@@ -6,10 +6,6 @@ import android.content.Context;
 import android.content.res.TypedArray;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
-import android.support.annotation.LayoutRes;
-import android.support.v7.widget.LinearLayoutCompat;
-import android.support.v7.widget.TintTypedArray;
-import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.view.Gravity;
@@ -18,6 +14,11 @@ import android.view.View;
 import android.view.ViewParent;
 import android.widget.TextView;
 
+
+import androidx.annotation.LayoutRes;
+import androidx.appcompat.widget.LinearLayoutCompat;
+import androidx.appcompat.widget.TintTypedArray;
+import androidx.appcompat.widget.Toolbar;
 
 import com.lz.fram.R;
 

@@ -5,7 +5,7 @@ import android.view.View;
 import com.lz.fram.base.FramBaseActivity;
 import com.lz.fram.inject.InjectLayout;
 import com.lz.fram.scope.AttachPresenter;
-import com.lz.httplib.RxRequestUtils;
+import com.lz.httplib.RxHttp;
 import com.lz.httplib.bean.ParseInfo;
 import com.lz.httplib.callback.APICallBack;
 import com.lz.httplib.http.ConfigModule;
@@ -31,7 +31,7 @@ public class MainActivity extends FramBaseActivity {
 //                .setUrl("钉钉机器人上传地址")
                 .build();*/
 //        StatusView.init(this).showContentView();
-        RxRequestUtils.initConfig(new ConfigModule() {
+        RxHttp.initConfig(new ConfigModule() {
             @Override
             public void applyOptions(GlobalConfigBuild.Builder builder) {
                 builder

@@ -1,11 +1,10 @@
-package com.lz.fram.observer;
+package com.lz.httplib.observer;
 
 
+import android.app.Dialog;
 import android.text.TextUtils;
 
 import com.google.gson.reflect.TypeToken;
-import com.lz.fram.utils.ActivityUtils;
-import com.lz.fram.utils.LoadDialog;
 import com.lz.httplib.util.JSONFactory;
 
 import java.lang.reflect.Type;
@@ -31,8 +30,7 @@ import io.reactivex.schedulers.Schedulers;
 public class JsonParseTransformer {
 
 
-    public static ObservableTransformer<String, String> switchSchedulersStr() {
-        final LoadDialog loadDialog = new LoadDialog(ActivityUtils.currentActivity());
+    public static ObservableTransformer<String, String> switchSchedulersStr(final Dialog dialog) {
 
         return new ObservableTransformer<String, String>() {
             @Override
@@ -44,7 +42,9 @@ public class JsonParseTransformer {
                         .doOnSubscribe(new Consumer<Disposable>() {
                             @Override
                             public void accept(Disposable disposable) throws Exception {
-                                loadDialog.show();
+                                if (dialog != null) {
+                                    dialog.show();
+                                }
 
                             }
                         })
@@ -53,15 +53,16 @@ public class JsonParseTransformer {
                         .doFinally(new Action() {
                             @Override
                             public void run() throws Exception {
-                                loadDialog.dismiss();
+                                if (dialog != null) {
+                                    dialog.dismiss();
+                                }
                             }
                         });
             }
         };
     }
 
-    public static <T> ObservableTransformer<String, T> switchSchedulersObj(final Class<T> type) {
-        final LoadDialog loadDialog = new LoadDialog(ActivityUtils.currentActivity());
+    public static <T> ObservableTransformer<String, T> switchSchedulersObj(final Class<T> type, final Dialog dialog) {
 
         return new ObservableTransformer<String, T>() {
             @Override
@@ -80,7 +81,9 @@ public class JsonParseTransformer {
                             @Override
                             public void accept(Disposable disposable) throws Exception {
 
-                                loadDialog.show();
+                                if (dialog != null) {
+                                    dialog.show();
+                                }
                             }
                         })
                         .subscribeOn(AndroidSchedulers.mainThread())
@@ -88,15 +91,16 @@ public class JsonParseTransformer {
                         .doFinally(new Action() {
                             @Override
                             public void run() throws Exception {
-                                loadDialog.dismiss();
+                                if (dialog != null) {
+                                    dialog.dismiss();
+                                }
                             }
                         });
             }
         };
     }
 
-    public static <T> ObservableTransformer<String, List<T>> switchSchedulersArray(final Class<T> clazz) {
-        final LoadDialog loadDialog = new LoadDialog(ActivityUtils.currentActivity());
+    public static <T> ObservableTransformer<String, List<T>> switchSchedulersArray(final Class<T> clazz,final  Dialog dialog) {
         return new ObservableTransformer<String, List<T>>() {
             @Override
             public ObservableSource<List<T>> apply(Observable<String> upstream) {
@@ -115,7 +119,9 @@ public class JsonParseTransformer {
                         .doOnSubscribe(new Consumer<Disposable>() {
                             @Override
                             public void accept(Disposable disposable) throws Exception {
-                                loadDialog.show();
+                                if (dialog != null) {
+                                    dialog.show();
+                                }
 
                             }
                         })
@@ -124,15 +130,16 @@ public class JsonParseTransformer {
                         .doFinally(new Action() {
                             @Override
                             public void run() throws Exception {
-                                loadDialog.dismiss();
+                                if (dialog != null) {
+                                    dialog.dismiss();
+                                }
                             }
                         });
             }
         };
     }
 
-    public static <T> ObservableTransformer<String, T> switchSchedulers(final Type type) {
-        final LoadDialog loadDialog = new LoadDialog(ActivityUtils.currentActivity());
+    public static <T> ObservableTransformer<String, T> switchSchedulers(final Type type,final  Dialog dialog) {
 
 
         return new ObservableTransformer<String, T>() {
@@ -152,7 +159,9 @@ public class JsonParseTransformer {
                         .doOnSubscribe(new Consumer<Disposable>() {
                             @Override
                             public void accept(Disposable disposable) throws Exception {
-                                loadDialog.show();
+                                if (dialog != null) {
+                                    dialog.show();
+                                }
 
                             }
                         })
@@ -161,7 +170,9 @@ public class JsonParseTransformer {
                         .doFinally(new Action() {
                             @Override
                             public void run() throws Exception {
-                                loadDialog.dismiss();
+                                if (dialog != null) {
+                                    dialog.dismiss();
+                                }
                             }
                         });
             }

@@ -4,6 +4,8 @@ import android.text.TextUtils;
 
 import com.lz.httplib.bean.ParseInfo;
 import com.lz.httplib.callback.APICallBack;
+import com.lz.httplib.observer.BaseException;
+import com.lz.httplib.observer.DefaultException;
 
 import java.util.ArrayList;
 import java.util.List;

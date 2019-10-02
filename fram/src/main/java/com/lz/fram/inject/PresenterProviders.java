@@ -1,7 +1,8 @@
 package com.lz.fram.inject;
 
 
-import android.arch.lifecycle.Lifecycle;
+
+import androidx.lifecycle.Lifecycle;
 
 import com.lz.fram.base.BasePresenterImpl;
 import com.lz.fram.scope.AttachPresenter;

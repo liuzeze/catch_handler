@@ -1,14 +1,18 @@
-package com.lz.fram.observer;
+package com.lz.httplib.observer;
 
+import android.os.SystemClock;
 import android.text.TextUtils;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonParseException;
 import com.lz.httplib.bean.ParseInfo;
 import com.lz.httplib.callback.APICallBack;
 import com.lz.httplib.http.GlobalConfigBuild;
 import com.lz.httplib.http.HttpConfigFactory;
 import com.lz.httplib.util.JSONFactory;
+
+import org.json.JSONException;
 
 import io.reactivex.functions.Function;
 
@@ -25,11 +29,11 @@ public class MapFunction implements Function<String, String> {
     public String apply(String s) throws Exception {
         JsonElement jsonElement = JSONFactory.parseJson(s);
         JsonObject asJsonObject = jsonElement.getAsJsonObject();
-
         GlobalConfigBuild configBuild = HttpConfigFactory.getInstance().getConfigBuild();
         ParseInfo parseInfo = configBuild.getPaeseInfor();
         if (!parseInfo.hasKey(asJsonObject)) {
-            throw new ApiException(new Throwable("Json格式化错误,ParseInfo不匹配"), ApiException.ERROR.PARSE_ERROR);
+            throw new BaseException(new Throwable("Json格式化错误,ParseInfo不匹配"), ExceptionCode.PARSE_ERROR);
+
         }
         //拿到后台返回code
         String code = JSONFactory.getValue(jsonElement, parseInfo.getCodeKey());
@@ -46,7 +50,7 @@ public class MapFunction implements Function<String, String> {
                 msg = callback;
             }
         }
-        throw new ApiException(new Throwable(msg), Integer.parseInt(code));
+        throw new BaseException(new Throwable(msg), Integer.parseInt(code));
 
 
     }

@@ -1,10 +1,9 @@
 package com.lz.fram.base;
 
 
-import android.arch.lifecycle.LifecycleOwner;
 import android.content.Context;
 
-import com.lz.fram.observer.LifeCycleObseverble;
+import androidx.lifecycle.LifecycleOwner;
 
 /**
  * -------- 日期 ---------- 维护人 ------------ 变更内容 --------
@@ -22,12 +21,7 @@ public class RxPresenter<attachView extends BaseView> implements BasePresenterIm
         mContext = mBaseView.getContext();
     }
 
-    protected <LifeCycle> LifeCycleObseverble<LifeCycle> bindLifecycle() {
-        if (null == mBaseView) {
-            throw new NullPointerException("lifecycleOwner == null");
-        }
-        return new LifeCycleObseverble<>(mBaseView);
-    }
+
     @Override
     public void onCreate(LifecycleOwner owner) {
 

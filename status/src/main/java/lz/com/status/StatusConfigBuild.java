@@ -1,6 +1,6 @@
 package lz.com.status;
 
-import android.support.annotation.ColorRes;
+import androidx.annotation.ColorRes;
 import android.view.View;
 
 /**

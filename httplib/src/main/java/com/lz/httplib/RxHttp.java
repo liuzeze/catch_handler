@@ -17,7 +17,7 @@ import okhttp3.ResponseBody;
  * -----------作者----------日期----------变更内容-----
  * -          刘泽      2018-10-16       创建class
  */
-public class RxRequestUtils {
+public class RxHttp {
 
     public static void initConfig(ConfigModule options) {
         HttpConfigFactory.getInstance().initConfig(options);

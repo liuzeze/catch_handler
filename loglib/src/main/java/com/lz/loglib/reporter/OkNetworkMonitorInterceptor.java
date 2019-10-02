@@ -10,7 +10,7 @@
 package com.lz.loglib.reporter;
 
 
-import android.support.annotation.Nullable;
+import androidx.annotation.Nullable;
 
 
 import com.lz.loglib.stetho.DefaultResponseHandler;
